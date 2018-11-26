@@ -1,2 +1,2 @@
-# ferattention
-FERAtt: Facial Expression Recognition with Attention Net
+# fer-attention
+Facial Expression Recognition

@@ -19,6 +19,8 @@ Pytorch implementation for FERAtt neural net. Facial Expression Recognition with
 </div>
 
 
+The implementation is find [here](torchlib/models/atentionpreactresnet.py).
+
 Installation
 ------------
 

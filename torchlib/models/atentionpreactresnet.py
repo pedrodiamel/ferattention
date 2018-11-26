@@ -41,9 +41,6 @@ def atentionresnet34(pretrained=False, **kwargs):
 
     if pretrained == True:
         #model.load_state_dict(state['model'])
-        #state = torch.load('../netruns/attention_atentionresnet34_mcedice_adam_coco_dim64_preactresnet_bu3dfe_10/models/model_best.pth.tar')
-        #state = torch.load('../netruns/attention_atentionresnet34_mcedice_adam_coco_dim64_preactresnet_ferblack_fold1_11/models/model_best.pth.tar')
-        #model.load_state_dict(state['state_dict'])
         pass
     return model
 
@@ -104,10 +101,8 @@ class Conv2D(nn.Module):
 class DilateCenter(nn.Module):
     def __init__(self, in_size, out_size, kernel_size=3, is_batchnorm=False ):
         super(DilateCenter, self).__init__()
-        
         self.in_size = in_size
-        self.out_size = out_size
-        #self.conv_init = Conv2D( in_size, out_size, kernel_size, s=1, pad=0, is_batchnorm=is_batchnorm )     
+        self.out_size = out_size  
         self.conv_d1 = nn.Conv2d(in_size,  out_size, kernel_size, 1, kernel_size//2 + 0, dilation=1 )
         self.conv_d2 = nn.Conv2d(out_size, out_size, kernel_size, 1, kernel_size//2 + 1, dilation=2 )
         self.conv_d3 = nn.Conv2d(out_size, out_size, kernel_size, 1, kernel_size//2 + 2, dilation=3 )
@@ -165,7 +160,6 @@ class _Residual_Block_SR(nn.Module):
 class AtentionResNet(nn.Module):
     """PyTorch Atention model using ResNet(34, 101 or 152) encoder.
     """
-
     
     def __init__(self, encoder_depth, dim=32, num_classes=1, num_channels=3, num_filters=32, dropout_2d=0.2, pretrained=False, is_deconv=True):
         
@@ -185,6 +179,7 @@ class AtentionResNet(nn.Module):
         else:
             raise NotImplementedError('only 34, 101, 152 version of Resnet are implemented')
 
+        #attention module
         self.pool  = nn.MaxPool2d(2, 2)
         self.relu  = nn.ReLU(inplace=True)
         self.conv1 = nn.Sequential(self.encoder.conv1, self.encoder.bn1, self.encoder.relu, self.pool)
@@ -192,7 +187,6 @@ class AtentionResNet(nn.Module):
         self.conv3 = self.encoder.layer2
         self.conv4 = self.encoder.layer3
         self.conv5 = self.encoder.layer4        
-        #self.center = DecoderBlockV2( bottom_channel_nr, num_filters * 8 * 2, num_filters * 8, is_deconv)
         self.center = DilateCenter( bottom_channel_nr, num_filters * 8 )                
         self.dec5 = DecoderBlockV2(bottom_channel_nr + num_filters * 8, num_filters * 8 * 2, num_filters * 8, is_deconv)
         self.dec4 = DecoderBlockV2(bottom_channel_nr // 2 + num_filters * 8, num_filters * 8 * 2, num_filters * 8, is_deconv)
@@ -205,34 +199,18 @@ class AtentionResNet(nn.Module):
             nn.Conv2d(num_filters, 1, kernel_size=1)  
         )                
         
-        #feature
+        #feature module
         self.conv_input = nn.Conv2d(in_channels=num_channels, out_channels=num_filters, kernel_size=9, stride=1, padding=4, bias=True)
         self.feature    = self.make_layer(_Residual_Block_SR, 4, num_filters )
         self.conv_mid   = nn.Conv2d(in_channels=num_filters, out_channels=num_filters, kernel_size=3, stride=1, padding=1, bias=True)
-        #self.conv_end   = nn.Conv2d(in_channels=num_filters, out_channels=num_channels, kernel_size=1, stride=1, padding=0, bias=True)   
-            
-                
-        #self.rec1  = ConvRelu(num_filters, num_filters)      
-        #self.rec2  = nn.Conv2d(num_filters, num_channels, kernel_size=1)           
+        
+        #recostruction
         self.reconstruction = nn.Sequential(
-        #    #nn.Conv2d(in_channels=num_filters, out_channels=num_filters, kernel_size=3, stride=1, padding=1, bias=True),
-        #    #nn.ReLU(inplace=True),
-        #    #nn.LeakyReLU(0.2, inplace=True),
             ConvRelu(num_filters, num_filters),
             nn.Conv2d(in_channels=num_filters, out_channels=num_channels, kernel_size=1, stride=1, padding=0, bias=True),
-            #nn.ReLU(inplace=True),
         )
-       
-        
-        #CNN
-        #self.conv6  = nn.Sequential(self.encoder.conv1, self.encoder.bn1, self.encoder.relu, self.pool)
-        #self.conv7  = self.encoder.layer1
-        #self.conv8  = self.encoder.layer2
-        #self.conv9  = self.encoder.layer3
-        #self.conv10 = self.encoder.layer4
-        #self.coder = nn.Linear(bottom_channel_nr , dim)
-        #self.classification = nn.Linear(dim , num_classes)
-        
+
+        #classification and reconstruction               
         self.netclass = preactresnet.preactresembnetex18( num_classes=num_classes, num_channels=num_channels  )
         
     
@@ -244,18 +222,15 @@ class AtentionResNet(nn.Module):
         return nn.Sequential(*layers)
         
 
-    def forward(self, x ):          
+    def forward(self, x ):    
         
-        
+        #attention module
         conv1 = self.conv1(x)
         conv2 = self.conv2(conv1)
         conv3 = self.conv3(conv2)
         conv4 = self.conv4(conv3)
         conv5 = self.conv5(conv4)
-
-        #pool = self.pool(conv5)
         center = self.center( conv5 )  
-        
         dec5 = self.dec5(torch.cat([center, conv5], 1))        
         dec4 = self.dec4(torch.cat([dec5, conv4], 1))
         dec3 = self.dec3(torch.cat([dec4, conv3], 1))
@@ -265,54 +240,35 @@ class AtentionResNet(nn.Module):
         #attention map
         fmap = self.attention_map( dec1) 
             
-        #feature   
+        #feature module
         out = self.conv_input( x )
         residual = out
         out = self.feature( out )
         out = self.conv_mid(out)
         srf = torch.add(out, residual)
-        #srf = self.conv_end( out )  
-            
-        
-        #  Relu( \sigma(A) * F(I) )
+       
+        #fusion
+        #\sigma(A) * F(I) 
         attmap = torch.mul( F.sigmoid(fmap),  srf )       
-        att = self.reconstruction(attmap)
-        #att = self.rec1(attmap)
-        #att = self.rec2(att)
-                
-        
-        #CNN        
+        att = self.reconstruction(attmap)       
         att_pool = F.avg_pool2d(att, 4)
-        #att_pool = att
         
-        #conv6  = self.conv6(att_pool)       
-        #conv7  = self.conv7(conv6)     
-        #conv8  = self.conv8(conv7)    
-        #conv9  = self.conv9(conv8)     
-        #conv10 = self.conv10(conv9)   
-        #out = F.avg_pool2d(conv10, conv10.shape[3])   
-        #out = out.view(out.size(0), -1)
-        #z = self.coder(out)
-        #y = self.classification(z)
-        
+        #classification
         z, y = self.netclass( att_pool )
-        
-        
+                
         return z, y, att , fmap, srf 
     
 
 
 
-def test():
-    
+
+def test():    
     batch=10
     num_channels=3
     num_classes=10
-    dim=20
-    
+    dim=20    
     net = atentionresnet34( False, dim=dim, num_channels=num_channels, num_classes=num_classes ).cuda()
     z, y, xr = net(  torch.randn(batch, num_channels, 64, 64 ).cuda() ) 
-        
     print( z.shape )
     print( y.shape )
     print( xr.shape )

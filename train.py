@@ -126,7 +126,7 @@ def main():
     cudnn.benchmark = True
 
     kfold=0
-    nactores=20
+    nactores=10
     idenselect = np.arange(nactores) + kfold*nactores
 
     # datasets

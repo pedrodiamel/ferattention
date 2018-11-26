@@ -18,12 +18,12 @@ ARCH='atentionresnet34'
 LOSS='attgmm'
 OPT='adam'
 SCHEDULER='step'
-NUMCLASS=8
+NUMCLASS=7
 NUMCHANNELS=3
 DIM=64
 SNAPSHOT=5
 IMAGESIZE=128
-EXP_NAME='attentionrec_'$ARCH'_'$LOSS'_'$OPT'_'$NAMEDATASET'_dim'$DIM'_preactresnet18x32_fold01_000'
+EXP_NAME='fer_'$ARCH'_'$LOSS'_'$OPT'_'$NAMEDATASET'_dim'$DIM'_preactresnet18x32_fold01_000'
 
 rm -rf $PROJECT/$EXP_NAME/$EXP_NAME.log
 rm -rf $PROJECT/$EXP_NAME/

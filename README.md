@@ -22,6 +22,25 @@ Pytorch implementation for FERAtt neural net. Facial Expression Recognition with
 
 The implementation is find [here](torchlib/models/atentionpreactresnet.py).
 
+
+Attention Module Results
+------------
+
+<div align="center">
+<!-- <img src="rec/att_pipeline_org.png" width="180">
+<img src="rec/att_pipeline_fmap.png" width="180">
+<img src="rec/att_pipeline_attmap.png" width="180">
+<img src="rec/att_pipeline_iatt.png" width="180"> -->
+<img src="rec/att_pipeline.png" width="1024">
+</div>
+
+
+## Prerequisites
+- Linux or macOS
+- Python 3
+- NVIDIA GPU + CUDA cuDNN
+- PyTorch 0.4
+
 Installation
 ------------
 
@@ -48,10 +67,9 @@ How use
 
 ### Step 1: Train
 
-    ./train.sh
+    ./train_bu3dfe.sh
+    ./train_ck.sh
     
 ### Step 2: Eval
-
-    ./eval.sh
-
+For evaluation we used the notebook [eval.ipynb](./books/eval.ipynb)
 

@@ -197,7 +197,7 @@ class AttentionNeuralNet(NeuralNetAbstract):
                               
 
                 # fit (forward)            
-                z, y_lab_hat, att, _, _ = self.net( x_img ) 
+                z, y_lab_hat, att, fmap, srf  = self.net( x_img ) 
                 
                 
                 # measure accuracy and record loss       
@@ -248,11 +248,14 @@ class AttentionNeuralNet(NeuralNetAbstract):
         #vizual_freq
         if epoch % self.view_freq == 0:
 
-            att = att[0,:,:,:].permute( 1,2,0 )            
+            att = att[0,:,:,:].permute( 1,2,0 ).mean(dim=2)  
+            srf = srf[0,:,:,:].permute( 1,2,0 ).sum(dim=2)  
+            fmap = fmap[0,:,:,:].permute( 1,2,0 ) 
+                        
             self.visheatmap.show('Image', x_img.data.cpu()[0].numpy()[0,:,:])           
-            self.visheatmap.show('Attention ch1',att.cpu().numpy()[:,:,0].astype(np.float32) )
-            self.visheatmap.show('Attention ch2',att.cpu().numpy()[:,:,1].astype(np.float32) )
-            self.visheatmap.show('Attention ch3',att.cpu().numpy()[:,:,2].astype(np.float32) )
+            self.visheatmap.show('Image Attention',att.cpu().numpy().astype(np.float32) )
+            self.visheatmap.show('Feature Map',srf.cpu().numpy().astype(np.float32) )
+            self.visheatmap.show('Attention Map',fmap.cpu().numpy().astype(np.float32) )
             
 
         return acc

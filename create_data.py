@@ -26,7 +26,7 @@ import skimage.morphology as morph
 import scipy.ndimage as ndi
 
 
-project          = 'netruns'
+project          = 'out'
 name             = 'attention_atentionresnet34_mcedice_adam_coco_003'
 pathnamedataset  = '~/.datasets'
 pathnewdataset   = 'netruns/newdataset'

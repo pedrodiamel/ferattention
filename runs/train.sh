@@ -6,13 +6,13 @@ DATABACK='~/.datasets/coco'
 DATA='~/.datasets'
 NAMEDATASET='bu3dfe' #ferblack
 PROJECT='../out'
-EPOCHS=65
+EPOCHS=260
 BATCHSIZE=250
 LEARNING_RATE=0.0001
 MOMENTUM=0.5
 PRINT_FREQ=75
 WORKERS=80
-RESUME='chk000000xx.pth.tar'
+RESUME='chk000115.pth.tar'
 GPU=0
 ARCH='atentionresnet34'
 LOSS='attgmm'
@@ -25,10 +25,10 @@ SNAPSHOT=5
 IMAGESIZE=128
 EXP_NAME='fer_'$ARCH'_'$LOSS'_'$OPT'_'$NAMEDATASET'_dim'$DIM'_preactresnet18x32_fold01_000'
 
-rm -rf $PROJECT/$EXP_NAME/$EXP_NAME.log
-rm -rf $PROJECT/$EXP_NAME/
-mkdir $PROJECT    
-mkdir $PROJECT/$EXP_NAME  
+#rm -rf $PROJECT/$EXP_NAME/$EXP_NAME.log
+#rm -rf $PROJECT/$EXP_NAME/
+#mkdir $PROJECT    
+#mkdir $PROJECT/$EXP_NAME  
 
 
 python ../train.py \

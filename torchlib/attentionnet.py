@@ -139,18 +139,11 @@ class AttentionNeuralNet(NeuralNetAbstract):
                 y_lab   = y_lab.cuda()
 
             # fit (forward)            
-            z, y_lab_hat, att = self.net( x_img )    
-            
+            z, y_lab_hat, att, _, _ = self.net( x_img )                
 
             # measure accuracy and record loss           
             loss_bce  = self.criterion_bce(  y_lab_hat, y_lab.long() )
             loss_gmm  = self.criterion_gmm(  z, y_lab )            
-            
-            #loss_att  = self.criterion_mse( x_img*y_mask[:,1,...].unsqueeze(dim=1), att  ) 
-            #loss_att   =  F.sigmoid( att*y_mask[:,0,...].unsqueeze(dim=1) ).norm(2)                
-            #loss_att   = (((x_img*y_mask[:,1,...].unsqueeze(dim=1) - att ) ** 2) * ( y_mask[:,0,...].unsqueeze(dim=1) + y_mask[:,1,...].unsqueeze(dim=1)*0.5  )).mean()
-
-            #loss_att   =  ((( (x_img*y_mask[:,1,...].unsqueeze(dim=1)).mean(dim=1) - att.mean(dim=1) ) ** 2)).mean()
             loss_att =  ((( (x_org*y_mask[:,1,...].unsqueeze(dim=1)) - att ) ** 2)).mean()
             loss_att = torch.clamp(loss_att, max=10)
             
@@ -201,26 +194,15 @@ class AttentionNeuralNet(NeuralNetAbstract):
                     x_img  = x_img.cuda()
                     y_mask = y_mask.cuda()
                     y_lab  = y_lab.cuda()
-                 
-                
-                #print( y_lab.shape )
-                #assert(False)                 
+                              
 
                 # fit (forward)            
-                z, y_lab_hat, att = self.net( x_img ) 
+                z, y_lab_hat, att, _, _ = self.net( x_img ) 
                 
                 
                 # measure accuracy and record loss       
                 loss_bce  = self.criterion_bce(  y_lab_hat, y_lab.long() )
                 loss_gmm  = self.criterion_gmm(  z, y_lab )
-                
-                #loss_att  = self.criterion_mse( x_img*y_mask[:,1,...].unsqueeze(dim=1), att )  
-                #loss_att   =  F.sigmoid( att*y_mask[:,0,...].unsqueeze(dim=1) ).norm(2) 
-                
-                #loss_att   = (((x_img*y_mask[:,1,...].unsqueeze(dim=1) - att ) ** 2) * ( y_mask[:,0,...].unsqueeze(dim=1) + y_mask[:,1,...].unsqueeze(dim=1)*0.5  )).mean()
-
-                
-                #loss_att   =  ((( (x_img*y_mask[:,1,...].unsqueeze(dim=1)).mean(dim=1) - att.mean(dim=1) ) ** 2)).mean()
                 loss_att   =  ((( (x_org*y_mask[:,1,...].unsqueeze(dim=1)) - att ) ** 2)).mean()  
                 loss_att = torch.clamp(loss_att, max=10)
                 
@@ -265,23 +247,14 @@ class AttentionNeuralNet(NeuralNetAbstract):
 
         #vizual_freq
         if epoch % self.view_freq == 0:
-                                                        
-            #prob = F.softmax( y_mask_hat, dim=1)
-            #prob = prob.data[0]
-            #maxprob = torch.argmax(prob, 0)
-            
+
             att = att[0,:,:,:].permute( 1,2,0 )            
-            #self.visheatmap.show('Label', y_mask.data.cpu()[0].numpy()[1,:,:] )
-            self.visheatmap.show('Image', x_img.data.cpu()[0].numpy()[0,:,:])
-            #self.visheatmap.show('Max prob',maxprob.cpu().numpy().astype(np.float32) )
-            
+            self.visheatmap.show('Image', x_img.data.cpu()[0].numpy()[0,:,:])           
             self.visheatmap.show('Attention ch1',att.cpu().numpy()[:,:,0].astype(np.float32) )
             self.visheatmap.show('Attention ch2',att.cpu().numpy()[:,:,1].astype(np.float32) )
             self.visheatmap.show('Attention ch3',att.cpu().numpy()[:,:,2].astype(np.float32) )
             
-            #for k in range(prob.shape[0]):                
-            #    self.visheatmap.show('Heat map {}'.format(k), prob.cpu()[k].numpy() )
-        
+
         return acc
 
 
@@ -311,7 +284,6 @@ class AttentionNeuralNet(NeuralNetAbstract):
             x = image.cuda() if self.cuda else image    
             z, y_lab_hat, att, fmap, srf = self.net(x)                         
             y_lab_hat = F.softmax( y_lab_hat, dim=1 )
-            #yhat = pytutils.to_np(yhat).transpose(2,3,1,0)[...,0]
             
         return z, y_lab_hat, att, fmap, srf
 
@@ -330,8 +302,6 @@ class AttentionNeuralNet(NeuralNetAbstract):
         #-------------------------------------------------------------------------------------------- 
         # select architecture
         #--------------------------------------------------------------------------------------------
-        #kw = {'num_classes': num_output_channels, 'num_channels': num_input_channels, 'pretrained': pretrained}
-        #kw = {'num_classes': num_output_channels, 'in_channels': num_input_channels, 'pretrained': pretrained}
         kw = {'dim': num_output_channels, 'num_classes': self.num_classes, 'num_channels': num_input_channels, 'pretrained': pretrained}
         self.net = nnmodels.__dict__[arch](**kw)
         
@@ -349,26 +319,13 @@ class AttentionNeuralNet(NeuralNetAbstract):
     def _create_loss(self, loss):
 
         # create loss
-        if loss == 'wmce':
-            self.criterion = nloss.WeightedMCEloss()
-        elif loss == 'bdice':
-            self.criterion = nloss.BDiceLoss()
-        elif loss == 'wbdice':
-            self.criterion = nloss.WeightedBDiceLoss()
-        elif loss == 'wmcedice':
-            self.criterion = nloss.WeightedMCEDiceLoss()
-        elif loss == 'wfocalmce':
-            self.criterion = nloss.WeightedMCEFocalloss()
-        elif loss == 'mcedice':
-            self.criterion = nloss.MCEDiceLoss()  
+        if loss == 'attgmm':            
+            self.criterion_bce = nn.CrossEntropyLoss().cuda()
+            self.criterion_mse = nn.MSELoss().cuda()
+            self.criterion_gmm = nloss.DGMMLoss( self.num_classes, cuda=self.cuda )
         else:
             assert(False)
 
-        self.criterion_bce = nn.CrossEntropyLoss().cuda()
-        self.criterion_mse = nn.MSELoss().cuda()
-        self.criterion_gmm = nloss.DGMMLoss( self.num_classes, cuda=self.cuda )
-        
-        
         self.s_loss = loss
 
 

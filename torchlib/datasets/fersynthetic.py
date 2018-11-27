@@ -92,7 +92,7 @@ class SyntheticFaceDataset( data.Dataset ):
         # read background 
         if self.bbackimage:
             idxk = random.randint(1, len(self.databack) - 1 )
-            back = self.databack[ idxk  ] #(idxk)%len(self.databack)
+            back = self.databack[ idxk  ] 
             back = F.resize_image(back, 640, 1024, resize_mode='crop', interpolate_mode=cv2.INTER_LINEAR);
             back = utility.to_channels(back, self.num_channels)
         else:

@@ -4,8 +4,8 @@
 # parameters
 DATABACK='~/.datasets/coco'
 DATA='~/.datasets'
-NAMEDATASET='ferblack'
-PROJECT='../netruns'
+NAMEDATASET='bu3dfe' #ferblack
+PROJECT='../out'
 EPOCHS=65
 BATCHSIZE=250
 LEARNING_RATE=0.0001
@@ -15,15 +15,15 @@ WORKERS=80
 RESUME='chk000000xx.pth.tar'
 GPU=0
 ARCH='atentionresnet34'
-LOSS='mcedice'
+LOSS='attgmm'
 OPT='adam'
 SCHEDULER='step'
-NUMCLASS=8
+NUMCLASS=7
 NUMCHANNELS=3
 DIM=64
 SNAPSHOT=5
 IMAGESIZE=128
-EXP_NAME='attentionrec_'$ARCH'_'$LOSS'_'$OPT'_'$NAMEDATASET'_dim'$DIM'_preactresnet18x32_fold01_000'
+EXP_NAME='fer_'$ARCH'_'$LOSS'_'$OPT'_'$NAMEDATASET'_dim'$DIM'_preactresnet18x32_fold01_000'
 
 rm -rf $PROJECT/$EXP_NAME/$EXP_NAME.log
 rm -rf $PROJECT/$EXP_NAME/

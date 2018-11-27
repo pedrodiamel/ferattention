@@ -118,7 +118,7 @@ Classification results for the **Real CK+** database applied to eight expression
 | ----------------- | ----------- | ----------- |----------- |----------- |
 | PreActResNet18    | 86.67%      | 81.62%      | 80.15%     | 80.87%     |   
 | FERAtt+Cls        | 85.42%      | 75.65%      | 78.79%     | 77.18%     |
-| FERAtt+Rep+Cls    | 90.30%      | 83.64%      | 84.90%     | 84.25%     |
+| FERAtt+Rep+Cls    | **90.30%**  | 83.64%      | 84.90%     | 84.25%     |
 
 
 

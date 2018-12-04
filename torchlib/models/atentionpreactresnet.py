@@ -156,6 +156,30 @@ class _Residual_Block_SR(nn.Module):
         return output
 
 
+
+class BiReLU(torch.autograd.Function):
+    """
+    """
+
+    @staticmethod
+    def forward(ctx, x):
+        """
+        """
+        ctx.save_for_backward(x)
+        alpha=0.0001
+        return x * ( torch.abs(x) >= alpha ).float()
+
+    @staticmethod
+    def backward(ctx, grad_output):
+        """
+        """
+        x, = ctx.saved_tensors
+        alpha=0.0001    
+        grad_x = grad_output.clone()
+        grad_x[ torch.abs(x) < alpha ] = 0
+        return grad_x 
+
+
     
 class AtentionResNet(nn.Module):
     """PyTorch Atention model using ResNet(34, 101 or 152) encoder.
@@ -238,30 +262,31 @@ class AtentionResNet(nn.Module):
         dec1 = self.dec1(dec2)           
         
         #attention map
-        fmap = self.attention_map( dec1) 
+        g_att = self.attention_map( dec1 ) 
             
         #feature module
         out = self.conv_input( x )
         residual = out
         out = self.feature( out )
         out = self.conv_mid(out)
-        srf = torch.add(out, residual)
+        g_ft = torch.add(out, residual )
        
         #fusion
         #\sigma(A) * F(I) 
-        attmap = torch.mul( F.sigmoid(fmap),  srf )       
-        att = self.reconstruction(attmap)       
-        att_pool = F.avg_pool2d(att, 4)
+        attmap = torch.mul( F.sigmoid( g_att ) ,  g_ft )       
+        att = self.reconstruction( attmap )   
+        att = BiReLU().apply( att ) 
+        
         
         #classification
+        att_pool = F.avg_pool2d(att, 4) # <- 32x32 source
         z, y = self.netclass( att_pool )
                 
-        return z, y, att , fmap, srf 
+        return z, y, att , g_att, g_ft 
     
 
 
-
-
+    
 def test():    
     batch=10
     num_channels=3

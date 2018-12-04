@@ -51,7 +51,7 @@ def make_dataset(pathdir, extensions):
                 item = (path, target)
                 images.append(item)
                 targets.append(target)
-    return images, targets
+    return images, np.array(targets)
 
 
 
@@ -74,19 +74,22 @@ class FERFolderDataset( dataProvide ):
         self.pathname  = os.path.expanduser( pathname )
         self.shuffle   = shuffle
         self.transform = transform   
-        self.data, self.targets = make_dataset( pathname, extensions )
-        self.classes = np.unique(self.targets)
-        
+        self.data, self.labels = make_dataset( pathname, extensions )
+          
+            
         df = pd.read_csv( os.path.join(pathname, 'ids.csv' ) )
         self.iactor = df.as_matrix()[:,0]
         
         #idenselect = np.arange(20)
         indexs = np.ones( (len(self.data) ,1) )
-        actors = np.unique(self.iactor)
+        actors = np.unique( self.iactor )
         for i in idenselect:
             indexs[self.iactor == actors[i]] = 0       
         self.indexs = np.where(indexs == train)[0] 
         
+        self.labels = self.labels[ self.indexs ]
+        self.classes = np.unique( self.labels )
+        self.numclass = len(self.classes)  
                 
         
 

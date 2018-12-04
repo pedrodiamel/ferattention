@@ -56,7 +56,7 @@ class FERClassicDataset( dataProvide ):
         
         #self.toferp = toferp
         #self.classes = classes
-        #self.class_to_idx = {_class: i for i, _class in enumerate(classes)}    
+        #self.class_to_idx = { _class: i for i, _class in enumerate(classes) }    
 
         self.labels = np.array([ toferp[l] for l in self.labels ])
         self.numclass = len(np.unique(self.labels))

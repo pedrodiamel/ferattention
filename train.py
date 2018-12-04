@@ -8,7 +8,7 @@ from torch.utils.data import Dataset, DataLoader
 from torchvision import transforms, utils
 import torch.backends.cudnn as cudnn
 
-from torchlib.datasets.fersynthetic  import SyntheticFaceDataset
+from torchlib.datasets.fersynthetic  import SyntheticFaceDataset, SecuencialSyntheticFaceDataset
 from torchlib.datasets.factory  import FactoryDataset
 from torchlib.attentionnet import AttentionNeuralNet
 
@@ -38,6 +38,12 @@ def arg_parser():
                         help='number of data loading workers (default: 1)')
     parser.add_argument('--epochs', default=90, type=int, metavar='N',
                         help='number of total epochs to run')
+    
+    parser.add_argument('--kfold', default=0, type=int, metavar='N',
+                        help='k fold')
+    parser.add_argument('--nactor', default=0, type=int, metavar='N',
+                        help='number of the actores')    
+    
     parser.add_argument('--start-epoch', default=0, type=int, metavar='N',
                         help='manual epoch number (useful on restarts)')
     parser.add_argument('-b', '--batch-size', default=256, type=int, metavar='N', 
@@ -124,14 +130,15 @@ def main():
     # resume
     network.resume( os.path.join(network.pathmodels, args.resume ) )
     cudnn.benchmark = True
-
-    kfold=0
-    nactores=10
+    
+    kfold=args.kfold
+    nactores=args.nactor
     idenselect = np.arange(nactores) + kfold*nactores
 
     # datasets
     # training dataset
-    train_data = SyntheticFaceDataset(
+    # SyntheticFaceDataset, SecuencialSyntheticFaceDataset
+    train_data = SecuencialSyntheticFaceDataset(
         data=FactoryDataset.factory(
             pathname=args.data, 
             name=args.name_dataset, 
@@ -153,7 +160,8 @@ def main():
     
     
     # validate dataset
-    val_data = SyntheticFaceDataset(
+    # SyntheticFaceDataset, SecuencialSyntheticFaceDataset
+    val_data = SecuencialSyntheticFaceDataset(
         data=FactoryDataset.factory(
             pathname=args.data, 
             name=args.name_dataset, 

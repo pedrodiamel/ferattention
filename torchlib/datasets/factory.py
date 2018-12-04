@@ -198,7 +198,7 @@ class FactoryDataset(object):
             btrain=(subset=='train')
             pathname = create_folder(pathname, name) 
             data = ferfolder.FERFolderDataset(pathname, train=btrain, idenselect=idenselect, download=download)        
-            data.labels = np.array( data.targets )
+            data.labels = np.array( data.labels )
             
 
         # metric learning dataset

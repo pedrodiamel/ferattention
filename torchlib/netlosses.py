@@ -233,17 +233,6 @@ class Dice(nn.Module):
         return dices.mean()
 
 
-#def to_one_hot(mask, size):    
-#    n, c, h, w = size
-#    ymask = torch.FloatTensor(size).zero_()
-#    new_mask = torch.LongTensor(n,1,h,w)
-#    if mask.is_cuda:
-#        ymask = ymask.cuda(mask.get_device())
-#        new_mask = new_mask.cuda(target.get_device())
-#    new_mask[:,0,:,:] = torch.clamp(mask.data, 0, c-1)
-#    ymask.scatter_(1, new_mask , 1.0)    
-#    return Variable(ymask)
-
 def centercrop(image, w, h):        
     nt, ct, ht, wt = image.size()
     padw, padh = (wt-w) // 2 ,(ht-h) // 2
@@ -383,37 +372,34 @@ class GMMAccuracy(nn.Module):
         
     def forward( self, x, y, classes=None ):  
 
-        #classes = self.classes
-        classes = self.classes if not classes else classes
+        #numclasses = self.classes
+        #numclasses = self.classes if not classes else classes        
+        classes  = np.unique(y)
+        numclasses = len(classes)
         
         num = x.shape[0]
         dim = x.shape[1]
-
+        
         ## initialization
-        Xmu = to_gpu(torch.zeros((num, classes )), self.cuda)  
+        Xmu = to_gpu(torch.zeros((num, numclasses )), self.cuda)  
         y   = to_gpu(y, self.cuda ).int()
         yh  = to_gpu(torch.zeros( (num, ) ), self.cuda ).int()
-
+        
         ## Ecuation
-        for i, c in enumerate( range(classes) ):
+        for i, c in enumerate( classes ):
             index = y==int(c)      
-            if index.sum() == 0:           
-                continue
+            if index.sum() == 0: continue            
             xc = x[ index , ... ]
             muc = xc.mean(dim=0)        
             Xmu[:,i] = torch.sum( (x - muc)**2 , dim=1)
             yh[index] = i
-            
+        
         pred = torch.argmin(Xmu, 1).int()
         correct = pred.eq( yh ).int()      
         acc = (correct.sum(0, keepdim=True).float().mul_(100.0 / num))    
         
         return acc
-
-
-    
-
-
+        
 
 
 ## Baseline clasification

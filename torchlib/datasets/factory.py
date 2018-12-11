@@ -169,12 +169,12 @@ class FactoryDataset(object):
         elif name == 'ckp':
             btrain=(subset=='train')
             pathname = create_folder(pathname, name)
-            data = fer.FERClassicDataset(pathname, 'ckp', idenselect=[], train=btrain )
+            data = fer.FERClassicDataset(pathname, 'ckp', idenselect=idenselect, train=btrain )
 
         elif name == 'jaffe':
             btrain=(subset=='train')
             pathname = create_folder(pathname, name)
-            data = fer.FERClassicDataset(pathname, 'jaffe', idenselect=[], train=btrain )
+            data = fer.FERClassicDataset(pathname, 'jaffe', idenselect=idenselect, train=btrain )
  
         elif name == 'bu3dfe':
             btrain=(subset=='train')

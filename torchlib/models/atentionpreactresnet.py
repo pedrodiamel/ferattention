@@ -109,10 +109,8 @@ class DilateCenter(nn.Module):
         self.conv_d4 = nn.Conv2d(out_size, out_size, kernel_size, 1, kernel_size//2 + 3, dilation=4 )
         self.relu = nn.ReLU()
         self.sigm = nn.Sigmoid()        
-                
     
-    def forward(self, x ): 
-        
+    def forward(self, x ):         
         skip = torch.zeros( x.shape[0], self.out_size, x.shape[2], x.shape[3] ).cuda()
         x1 = x       
         x2 = self.conv_d1(x1);  skip+= x2
@@ -121,7 +119,6 @@ class DilateCenter(nn.Module):
         x5 = self.conv_d4(x4);  skip+= x5
         x6 = self.relu (skip)
         y = x6
-
         return y
     
     
@@ -143,7 +140,6 @@ class _Residual_Block_DB(nn.Module):
 class _Residual_Block_SR(nn.Module):
     def __init__(self, num_ft):
         super(_Residual_Block_SR, self).__init__()
-
         self.conv1 = nn.Conv2d(in_channels=num_ft, out_channels=num_ft, kernel_size=3, stride=1, padding=1, bias=True)
         self.relu = nn.LeakyReLU(0.2, inplace=True)
         self.conv2 = nn.Conv2d(in_channels=num_ft, out_channels=num_ft, kernel_size=3, stride=1, padding=1, bias=True)
@@ -166,7 +162,7 @@ class BiReLU(torch.autograd.Function):
         """
         """
         ctx.save_for_backward(x)
-        alpha=0.0001
+        alpha=0.01
         return x * ( torch.abs(x) >= alpha ).float()
 
     @staticmethod
@@ -174,7 +170,7 @@ class BiReLU(torch.autograd.Function):
         """
         """
         x, = ctx.saved_tensors
-        alpha=0.0001    
+        alpha=0.01    
         grad_x = grad_output.clone()
         grad_x[ torch.abs(x) < alpha ] = 0
         return grad_x 
@@ -279,7 +275,7 @@ class AtentionResNet(nn.Module):
         
         
         #classification
-        att_pool = F.avg_pool2d(att, 4) # <- 32x32 source
+        att_pool = F.avg_pool2d(att, 4) # <- 32x32 source       
         z, y = self.netclass( att_pool )
                 
         return z, y, att , g_att, g_ft 

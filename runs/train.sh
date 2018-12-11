@@ -4,7 +4,7 @@
 # parameters
 DATABACK='~/.datasets/coco'
 DATA='~/.datasets'
-NAMEDATASET='ferblack' #bu3dfe, ferblack
+NAMEDATASET='bu3dfe' #bu3dfe, ferblack
 PROJECT='../out'
 EPOCHS=500
 BATCHSIZE=240
@@ -12,26 +12,26 @@ LEARNING_RATE=0.0001
 MOMENTUM=0.5
 PRINT_FREQ=75
 WORKERS=80
-RESUME='chk000000xx.pth.tar'
+RESUME='model_best.pth.tar'
 GPU=0
 ARCH='atentionresnet34'
 LOSS='attgmm'
 OPT='adam'
 SCHEDULER='step'
-NUMCLASS=8
+NUMCLASS=7
 NUMCHANNELS=3
 DIM=64
 SNAPSHOT=10
 IMAGESIZE=128
 KFOLD=0
 NACTOR=10
-EXP_NAME='fer_'$ARCH'_'$LOSS'_'$OPT'_'$NAMEDATASET'_dim'$DIM'_preactresnet18x32_fold'$KFOLD'_002'
+EXP_NAME='fer_'$ARCH'_'$LOSS'_'$OPT'_'$NAMEDATASET'_dim'$DIM'_preactresnet18x32_fold'$KFOLD'_004'
 
 
-rm -rf $PROJECT/$EXP_NAME/$EXP_NAME.log
-rm -rf $PROJECT/$EXP_NAME/
-mkdir $PROJECT    
-mkdir $PROJECT/$EXP_NAME  
+#rm -rf $PROJECT/$EXP_NAME/$EXP_NAME.log
+#rm -rf $PROJECT/$EXP_NAME/
+#mkdir $PROJECT    
+#mkdir $PROJECT/$EXP_NAME  
 
 
 python ../train.py \

@@ -137,17 +137,16 @@ class AttentionNeuralNet(NeuralNetAbstract):
                 x_img   = x_img.cuda() 
                 y_mask  = y_mask.cuda() 
                 y_lab   = y_lab.cuda()
-
+            
             # fit (forward)            
             z, y_lab_hat, att, _, _ = self.net( x_img )                
-
+            
             # measure accuracy and record loss           
             loss_bce  = self.criterion_bce(  y_lab_hat, y_lab.long() )
-            loss_gmm  = self.criterion_gmm(  z, y_lab )            
-            loss_att =  ((( (x_org*y_mask[:,1,...].unsqueeze(dim=1)) - att ) ** 2)).mean()
-            loss_att = torch.clamp(loss_att, max=10)
+            loss_gmm  = self.criterion_gmm(  z, y_lab )                     
+            loss_att = nloss.attLoss( x_org, y_mask, att )
             
-            loss = loss_bce + loss_gmm + loss_att           
+            loss = loss_bce + loss_gmm + 2*loss_att           
             
             topk  = self.topk( y_lab_hat, y_lab.long() )
             gmm  = self.gmm( z, y_lab )            
@@ -167,7 +166,7 @@ class AttentionNeuralNet(NeuralNetAbstract):
             # measure elapsed time
             batch_time.update(time.time() - end)
             end = time.time()
-
+            
             if i % self.print_freq == 0:  
                 self.logger_train.logger( epoch, epoch + float(i+1)/len(data_loader), i, len(data_loader), batch_time,   )
 
@@ -203,10 +202,9 @@ class AttentionNeuralNet(NeuralNetAbstract):
                 # measure accuracy and record loss       
                 loss_bce  = self.criterion_bce(  y_lab_hat, y_lab.long() )
                 loss_gmm  = self.criterion_gmm(  z, y_lab )
-                loss_att   =  ((( (x_org*y_mask[:,1,...].unsqueeze(dim=1)) - att ) ** 2)).mean()  
-                loss_att = torch.clamp(loss_att, max=10)
+                loss_att = nloss.attLoss( x_org, y_mask, att )
                 
-                loss      = loss_bce + loss_gmm + loss_att           
+                loss = loss_bce + loss_gmm + 2*loss_att           
 
                 topk  = self.topk( y_lab_hat, y_lab.long() )               
                 gmm  = self.gmm( z, y_lab )

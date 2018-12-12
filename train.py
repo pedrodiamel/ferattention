@@ -150,7 +150,7 @@ def main():
         ext='jpg',
         count=70000,
         num_channels=num_channels,
-        iluminate=True, angle=45, translation=0.3, warp=0.2, factor=0.2,
+        iluminate=True, angle=30, translation=0.1, warp=0.02, factor=0.1,
         transform_data=get_transforms_aug( imsize ),
         transform_image=get_transforms_det( imsize ),
         )
@@ -173,7 +173,8 @@ def main():
         ext='jpg',
         count=1000,
         num_channels=num_channels,
-        iluminate=True, angle=45, translation=0.3, warp=0.2, factor=0.2,
+        #iluminate=True, angle=45, translation=0.3, warp=0.2, factor=0.2,
+        iluminate=True, angle=30, translation=0.1, warp=0.02, factor=0.1,
         transform_data=get_transforms_det( imsize ),
         transform_image=get_transforms_det( imsize ),
         )

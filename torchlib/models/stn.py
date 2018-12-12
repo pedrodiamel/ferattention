@@ -23,7 +23,7 @@ class STN(nn.Module):
 
         # Regressor for the 3 * 2 affine matrix
         self.fc_loc = nn.Sequential(
-            nn.Linear(10 * 8 * 8, 32),
+            nn.Linear(10 * 28 * 28, 32),
             nn.ReLU(True),
             nn.Linear(32, 3 * 2)
         )
@@ -39,7 +39,7 @@ class STN(nn.Module):
         #print(xs.shape)
         #assert(False)
         
-        xs = xs.view(-1, 10 * 8 * 8)
+        xs = xs.view(-1, 10 * 28 * 28)
         theta = self.fc_loc(xs)
         theta = theta.view(-1, 2, 3)
 

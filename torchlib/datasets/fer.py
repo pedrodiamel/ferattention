@@ -65,8 +65,13 @@ class FERClassicDataset( dataProvide ):
         actors = np.unique(self.iactor)
         for i in idenselect:
             index[self.iactor == actors[i]] = 0       
-        self.index = np.where(index == train)[0] 
+        self.index = np.where(index == train)[0]        
         self.transform = transform
+        
+        self.labels_org = self.labels
+        self.labels = self.labels[ self.index ]
+        self.classes = np.unique( self.labels )
+        self.numclass = len(self.classes)  
               
 
     def __len__(self):
@@ -77,7 +82,7 @@ class FERClassicDataset( dataProvide ):
         if i<0 and i>len(self.index): raise ValueError('Index outside range')
         i = self.index[i]
         image = np.array( self.data[i].reshape(self.imsize).transpose(1,0), dtype=np.uint8 )
-        label = self.labels[i]
+        label = self.labels_org[i]
         return image, label
 
     def iden(self, i):

@@ -7,6 +7,7 @@ from torchvision import models
 import torchvision
 
 from . import preactresnet
+from . import stn
 
 
 __all__ = ['AtentionResNet', 'atentionresnet152', 'atentionresnet101', 'atentionresnet34']
@@ -229,6 +230,8 @@ class AtentionResNet(nn.Module):
             ConvRelu(num_filters, num_filters),
             nn.Conv2d(in_channels=num_filters, out_channels=num_channels, kernel_size=1, stride=1, padding=0, bias=True),
         )
+        
+        self.stn = stn.STN()
 
         #classification and reconstruction               
         self.netclass = preactresnet.preactresembnetex18( num_classes=num_classes, num_channels=num_channels  )
@@ -272,7 +275,7 @@ class AtentionResNet(nn.Module):
         attmap = torch.mul( F.sigmoid( g_att ) ,  g_ft )       
         att = self.reconstruction( attmap )   
         att = BiReLU().apply( att ) 
-        
+        att = self.stn(att)
         
         #classification
         att_pool = F.avg_pool2d(att, 4) # <- 32x32 source       

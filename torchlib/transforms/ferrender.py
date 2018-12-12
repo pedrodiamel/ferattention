@@ -66,6 +66,8 @@ class Generator(object):
         image = norm(image, mask)
         back  = norm(back)   
         
+        image_o, mask_o = image, mask
+        
         #scale 
         image, mask = scale( image, mask, factor=factor )
         image, mask = transform( image, mask, angle=angle, translation=translation, warp=warp )        
@@ -92,7 +94,8 @@ class Generator(object):
         image_org = back*(1-mask) + (mask)*image   
         image_ilu = back*(1-mask) + (mask)*image_ilu
         
-        return image_org, image_ilu, mask
+        
+        return image_o, image_ilu, mask_o
     
 
     def generate(self, image, back, pad = 10 ):

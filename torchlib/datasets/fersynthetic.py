@@ -105,7 +105,7 @@ class SyntheticFaceDataset( data.Dataset ):
                         
             
             image_org, image_ilu, mask = self.ren.generate( image, back )  
-            
+                        
             image_org = utility.to_gray( image_org.astype(np.uint8)  )
             image_org = utility.to_channels(image_org, self.num_channels)
             image_org = image_org.astype(np.uint8)
@@ -234,7 +234,7 @@ class SecuencialSyntheticFaceDataset( data.Dataset ):
             image_ilu = utility.to_channels(image_ilu, self.num_channels)
             image_ilu = image_ilu.astype(np.uint8) 
                                
-            mask = mask[:,:,0]
+            #mask = mask[:,:,0]
             mask_t = np.zeros( (mask.shape[0], mask.shape[1], 2) )
             mask_t[:,:,0] = (mask == 0).astype( np.uint8 ) # 0-backgraund
             mask_t[:,:,1] = (mask == 1).astype( np.uint8 )

@@ -5,7 +5,8 @@ import torch.nn.functional as F
 from torch.autograd import Variable
 
 
-def attLoss( x_org, y_mask, att ):    
+def attLoss( x_org, y_mask, att ):   
+    
     loss_att = ((( (x_org*y_mask[:,1,...].unsqueeze(dim=1)) - att ) ** 2)).mean()
     #loss_att =  ((( (x_org*y_mask[:,1,...].unsqueeze(dim=1)).mean(dim=1) - att.mean(dim=1) ) ** 2)).mean()
     #loss_att = (((x_org*y_mask[:,1,...].unsqueeze(dim=1) - att ) ** 2) * ( y_mask[:,0,...].unsqueeze(dim=1) + y_mask[:,1,...].unsqueeze(dim=1)*0.5  )).mean()  

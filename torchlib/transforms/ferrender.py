@@ -28,12 +28,31 @@ def crop(image, cropsize, limit=10, padding=cv2.BORDER_CONSTANT):
     image = F.imcrop( image, box, padding )
     return image
 
+
+def param2theta(mat_r, mat_t, mat_w, w, h):
+    Hr = np.concatenate( (mat_r,[[0,0,1]]),axis=0 )  
+    Ht = np.concatenate( (mat_t,[[0,0,1]]),axis=0 )
+    Hw = np.concatenate( (mat_w,[[0,0,1]]),axis=0 )
+    H = Hw.dot( Ht.dot( Hr) ) 
+    param = H #np.linalg.inv(H)
+    theta = np.zeros([2,3])
+    theta[0,0] = param[0,0]
+    theta[0,1] = param[0,1]*h/w
+    theta[0,2] = param[0,2]*2/w + param[0,0] + param[0,1] - 1
+    theta[1,0] = param[1,0]*w/h
+    theta[1,1] = param[1,1]
+    theta[1,2] = param[1,2]*2/h + param[1,0] + param[1,1] - 1
+    theta = theta.reshape(-1)
+    return theta
+
 def transform(image, mask, angle=360, translation=0.2, warp=0.0, padding=cv2.BORDER_CONSTANT ):
     imsize = image.shape[:2]
     mat_r, mat_t, mat_w = F.get_geometric_random_transform( imsize, angle, translation, warp )
     image = F.applay_geometrical_transform( image, mat_r, mat_t, mat_w, cv2.INTER_LINEAR , padding )
-    mask  = F.applay_geometrical_transform( mask, mat_r, mat_t, mat_w, cv2.INTER_NEAREST , padding )
-    return image, mask
+    mask  = F.applay_geometrical_transform( mask, mat_r, mat_t, mat_w, cv2.INTER_NEAREST , padding )   
+    h,w = image.shape[:2]
+    theta = param2theta( mat_r, mat_t, mat_w, w, h )
+    return image, mask, theta
     
 def norm(image, mask=None):
     
@@ -66,11 +85,11 @@ class Generator(object):
         image = norm(image, mask)
         back  = norm(back)   
         
-        image_o, mask_o = image, mask
+        #image_o, mask_o = image, mask
         
         #scale 
         image, mask = scale( image, mask, factor=factor )
-        image, mask = transform( image, mask, angle=angle, translation=translation, warp=warp )        
+        image, mask, h = transform( image, mask, angle=angle, translation=translation, warp=warp )        
         image_ilu = image.copy()
         
         #normalize illumination change
@@ -91,11 +110,12 @@ class Generator(object):
         mask = ndi.morphology.binary_fill_holes( mask*1.0 , structure=np.ones((7,7)) ) == 1
         mask = np.stack( (mask,mask,mask), axis=2 )
 
-        image_org = back*(1-mask) + (mask)*image   
+        image_org = (mask)*image   
+        #image_org = back*(1-mask) + (mask)*image   
         image_ilu = back*(1-mask) + (mask)*image_ilu
         
         
-        return image_o, image_ilu, mask_o
+        return image_org, image_ilu, mask, h
     
 
     def generate(self, image, back, pad = 10 ):
@@ -121,8 +141,8 @@ class Generator(object):
         back = back[ dy:(dy+im_h), dx:(dx+im_w), : ]
         back = cv2.resize(back, (im_w,im_h) ) 
         
-        image_org, image_ilu, mask = self.mixture( image, mask, back, self.iluminate, self.angle, self.translation, self.warp, self.factor  )
+        image_org, image_ilu, mask, h = self.mixture( image, mask, back, self.iluminate, self.angle, self.translation, self.warp, self.factor  )
         mask = mask.astype(int)
         
-        return image_org, image_ilu, mask
+        return image_org, image_ilu, mask, h
         

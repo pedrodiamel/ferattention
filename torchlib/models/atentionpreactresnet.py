@@ -245,8 +245,10 @@ class AtentionResNet(nn.Module):
         return nn.Sequential(*layers)
         
 
-    def forward(self, x ):    
+    def forward(self, x ):
         
+        
+                
         #attention module
         conv1 = self.conv1(x)
         conv2 = self.conv2(conv1)
@@ -275,13 +277,18 @@ class AtentionResNet(nn.Module):
         attmap = torch.mul( F.sigmoid( g_att ) ,  g_ft )       
         att = self.reconstruction( attmap )   
         att = BiReLU().apply( att ) 
-        att = self.stn(att)
+        
+        #stn
+        theta = self.stn( att.mean(dim=1).unsqueeze(dim=1).detach() ) # 
+        grid = F.affine_grid(theta, att.size())
+        att_t = F.grid_sample(att, grid)       
+                      
         
         #classification
-        att_pool = F.avg_pool2d(att, 4) # <- 32x32 source       
+        att_pool = F.avg_pool2d(att_t, 4) # <- 32x32 source       
         z, y = self.netclass( att_pool )
                 
-        return z, y, att , g_att, g_ft 
+        return z, y, att, theta, att_t, g_att, g_ft 
     
 
 

@@ -25,7 +25,7 @@ SNAPSHOT=10
 IMAGESIZE=128
 KFOLD=0
 NACTOR=10
-EXP_NAME='fer_'$ARCH'_'$LOSS'_'$OPT'_'$NAMEDATASET'_dim'$DIM'_preactresnet18x32_fold'$KFOLD'_004'
+EXP_NAME='fer_'$ARCH'_'$LOSS'_'$OPT'_'$NAMEDATASET'_dim'$DIM'_preactresnet18x32_fold'$KFOLD'_006'
 
 
 #rm -rf $PROJECT/$EXP_NAME/$EXP_NAME.log

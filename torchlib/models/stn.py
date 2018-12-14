@@ -13,7 +13,7 @@ class STN(nn.Module):
         
         # Spatial transformer localization-network
         self.localization = nn.Sequential(
-            nn.Conv2d(3, 8, kernel_size=7),
+            nn.Conv2d(1, 8, kernel_size=7),
             nn.MaxPool2d(2, stride=2),
             nn.ReLU(True),
             nn.Conv2d(8, 10, kernel_size=5),
@@ -25,7 +25,7 @@ class STN(nn.Module):
         self.fc_loc = nn.Sequential(
             nn.Linear(10 * 28 * 28, 32),
             nn.ReLU(True),
-            nn.Linear(32, 3 * 2)
+            nn.Linear(32, 3 * 2 )
         )
 
         # Initialize the weights/bias with identity transformation
@@ -38,21 +38,20 @@ class STN(nn.Module):
         
         #print(xs.shape)
         #assert(False)
-        
+                
         xs = xs.view(-1, 10 * 28 * 28)
-        theta = self.fc_loc(xs)
-        theta = theta.view(-1, 2, 3)
+        xs = self.fc_loc(xs)
+        theta = xs.view(-1, 2, 3)
+                
+        #grid = F.affine_grid(theta, x.size())
+        #x = F.grid_sample(x, grid)
 
-        grid = F.affine_grid(theta, x.size())
-        x = F.grid_sample(x, grid)
-
-        return x
+        return theta
 
     def forward(self, x):
-        
         # transform the input
-        x = self.stn(x)        
-        return x
+        theta = self.stn(x)        
+        return theta
 
     
     

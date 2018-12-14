@@ -125,28 +125,31 @@ class AttentionNeuralNet(NeuralNetAbstract):
         self.net.train()
 
         end = time.time()
-        for i, (x_org, x_img, y_mask, y_lab ) in enumerate(data_loader):
+        for i, (x_org, x_img, y_mask, meta ) in enumerate(data_loader):
             
             # measure data loading time
             data_time.update(time.time() - end)
             batch_size = x_img.shape[0]
-            y_lab = y_lab.squeeze(dim=1)
+            
+            y_lab = meta[:,0]
+            y_theta   = meta[:,1:].view(-1, 2, 3)            
 
             if self.cuda:
                 x_org   = x_org.cuda()
                 x_img   = x_img.cuda() 
                 y_mask  = y_mask.cuda() 
                 y_lab   = y_lab.cuda()
+                y_theta = y_theta.cuda()
             
             # fit (forward)            
-            z, y_lab_hat, att, _, _ = self.net( x_img )                
+            z, y_lab_hat, att, theta, _, _, _ = self.net( x_img )                
             
             # measure accuracy and record loss           
             loss_bce  = self.criterion_bce(  y_lab_hat, y_lab.long() )
-            loss_gmm  = self.criterion_gmm(  z, y_lab )                     
-            loss_att = nloss.attLoss( x_org, y_mask, att )
+            loss_gmm  = self.criterion_gmm(  z, y_lab )              
+            loss_att = nloss.attLoss( x_org, y_mask, att, y_theta, theta )
             
-            loss = loss_bce + loss_gmm + 2*loss_att           
+            loss = loss_bce + loss_gmm + loss_att           
             
             topk  = self.topk( y_lab_hat, y_lab.long() )
             gmm  = self.gmm( z, y_lab )            
@@ -181,30 +184,31 @@ class AttentionNeuralNet(NeuralNetAbstract):
         self.net.eval()
         with torch.no_grad():
             end = time.time()
-            for i, (x_org, x_img, y_mask, y_lab) in enumerate(data_loader):
+            for i, (x_org, x_img, y_mask, meta) in enumerate(data_loader):
                 
                 # get data (image, label)
-                batch_size = x_img.shape[0]                
-                y_lab = y_lab.squeeze(dim=1)
-                
-                
+                batch_size = x_img.shape[0]    
+                                               
+                y_lab = meta[:,0]
+                y_theta   = meta[:,1:].view(-1, 2, 3)
+                                
                 if self.cuda:
-                    x_org  = x_org.cuda()
-                    x_img  = x_img.cuda()
-                    y_mask = y_mask.cuda()
-                    y_lab  = y_lab.cuda()
+                    x_org   = x_org.cuda()
+                    x_img   = x_img.cuda()
+                    y_mask  = y_mask.cuda()
+                    y_lab   = y_lab.cuda()
+                    y_theta = y_theta.cuda()
                               
 
                 # fit (forward)            
-                z, y_lab_hat, att, fmap, srf  = self.net( x_img ) 
+                z, y_lab_hat, att, theta, att_t, fmap, srf  = self.net( x_img ) 
                 
                 
                 # measure accuracy and record loss       
                 loss_bce  = self.criterion_bce(  y_lab_hat, y_lab.long() )
                 loss_gmm  = self.criterion_gmm(  z, y_lab )
-                loss_att = nloss.attLoss( x_org, y_mask, att )
-                
-                loss = loss_bce + loss_gmm + 2*loss_att           
+                loss_att = nloss.attLoss( x_org, y_mask, att, y_theta, theta )
+                loss = loss_bce + loss_gmm + loss_att           
 
                 topk  = self.topk( y_lab_hat, y_lab.long() )               
                 gmm  = self.gmm( z, y_lab )
@@ -246,12 +250,18 @@ class AttentionNeuralNet(NeuralNetAbstract):
         #vizual_freq
         if epoch % self.view_freq == 0:
 
-            att = att[0,:,:,:].permute( 1,2,0 ).mean(dim=2)  
-            srf = srf[0,:,:,:].permute( 1,2,0 ).sum(dim=2)  
-            fmap = fmap[0,:,:,:].permute( 1,2,0 ) 
+            att   = att[0,:,:,:].permute( 1,2,0 ).mean(dim=2)
+            att_t = att_t[0,:,:,:].permute( 1,2,0 ).mean(dim=2)
+            srf   = srf[0,:,:,:].permute( 1,2,0 ).sum(dim=2)  
+            fmap  = fmap[0,:,:,:].permute( 1,2,0 ) 
+            
+            print('theta')
+            print(y_theta[0,:,:] )
+            print(theta[0,:,:] )
                         
             self.visheatmap.show('Image', x_img.data.cpu()[0].numpy()[0,:,:])           
             self.visheatmap.show('Image Attention',att.cpu().numpy().astype(np.float32) )
+            self.visheatmap.show('Image Attention Trans',att_t.cpu().numpy().astype(np.float32) )
             self.visheatmap.show('Feature Map',srf.cpu().numpy().astype(np.float32) )
             self.visheatmap.show('Attention Map',fmap.cpu().numpy().astype(np.float32) )
             
@@ -283,10 +293,10 @@ class AttentionNeuralNet(NeuralNetAbstract):
         self.net.eval()
         with torch.no_grad():
             x = image.cuda() if self.cuda else image    
-            z, y_lab_hat, att, fmap, srf = self.net(x)                         
+            z, y_lab_hat, att, theta, att_t, fmap, srf = self.net(x)                         
             y_lab_hat = F.softmax( y_lab_hat, dim=1 )
             
-        return z, y_lab_hat, att, fmap, srf
+        return z, y_lab_hat, att, theta, att_t, fmap, srf
 
 
     def _create_model(self, arch, num_output_channels, num_input_channels, pretrained ):

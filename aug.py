@@ -29,7 +29,7 @@ normalize = mtrans.ToMeanNormalization(
 #    )
 
 
-# normalize = mtrans.ToNormalization()
+#normalize = mtrans.ToNormalization()
 
 def get_transforms_aug( size_input ):
     return transforms.Compose([        

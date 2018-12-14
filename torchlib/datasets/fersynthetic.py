@@ -104,7 +104,7 @@ class SyntheticFaceDataset( data.Dataset ):
         elif self.generate == 'image_and_mask':   
                         
             
-            image_org, image_ilu, mask = self.ren.generate( image, back )  
+            image_org, image_ilu, mask, h = self.ren.generate( image, back )  
                         
             image_org = utility.to_gray( image_org.astype(np.uint8)  )
             image_org = utility.to_channels(image_org, self.num_channels)
@@ -120,7 +120,7 @@ class SyntheticFaceDataset( data.Dataset ):
             mask_t[:,:,1] = (mask == 1).astype( np.uint8 )
                         
             obj_image = ObjectImageTransform( image_org.copy()  )
-            obj_data = ObjectImageAndMaskMetadataTransform( image_ilu.copy(), mask_t, np.array([label]) )
+            obj_data = ObjectImageAndMaskMetadataTransform( image_ilu.copy(), mask_t, np.concatenate( ( [label], h),axis=0 ) ) #np.array([label])
                         
         else: 
             assert(False)         
@@ -224,7 +224,7 @@ class SecuencialSyntheticFaceDataset( data.Dataset ):
         elif self.generate == 'image_and_mask':   
                         
             
-            image_org, image_ilu, mask = self.ren.generate( image, back )  
+            image_org, image_ilu, mask, h = self.ren.generate( image, back )  
             
             image_org = utility.to_gray( image_org.astype(np.uint8)  )
             image_org = utility.to_channels(image_org, self.num_channels)
@@ -234,13 +234,13 @@ class SecuencialSyntheticFaceDataset( data.Dataset ):
             image_ilu = utility.to_channels(image_ilu, self.num_channels)
             image_ilu = image_ilu.astype(np.uint8) 
                                
-            #mask = mask[:,:,0]
+            mask = mask[:,:,0]
             mask_t = np.zeros( (mask.shape[0], mask.shape[1], 2) )
             mask_t[:,:,0] = (mask == 0).astype( np.uint8 ) # 0-backgraund
             mask_t[:,:,1] = (mask == 1).astype( np.uint8 )
                         
             obj_image = ObjectImageTransform( image_org.copy()  )
-            obj_data = ObjectImageAndMaskMetadataTransform( image_ilu.copy(), mask_t, np.array([label]) )
+            obj_data = ObjectImageAndMaskMetadataTransform( image_ilu.copy(), mask_t, np.concatenate( ( [label], h),axis=0 ) )
                         
         else: 
             assert(False)         

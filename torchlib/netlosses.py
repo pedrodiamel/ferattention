@@ -21,8 +21,7 @@ def attLoss( x_org, y_mask, att, y_theta, theta ):
     #loss_att =  ((( (x_org*y_mask[:,1,...].unsqueeze(dim=1)).mean(dim=1) - att.mean(dim=1) ) ** 2)).mean()
     #loss_att = (((x_org*y_mask[:,1,...].unsqueeze(dim=1) - att ) ** 2) * ( y_mask[:,0,...].unsqueeze(dim=1) + y_mask[:,1,...].unsqueeze(dim=1)*0.5  )).mean()  
     #loss_att = ( torch.abs(att*y_mask[:,0,...].unsqueeze(dim=1)) ).sum() / y_mask[:,0,...].sum()      
-    loss_att = torch.clamp(loss_att, max=30)
-    
+    loss_att = torch.clamp(loss_att, max=30)    
     
     return 2*loss_att + loss_theta
 
@@ -312,7 +311,7 @@ class DGMMLoss(nn.Module):
         if self.mix:
             # regeneration 
             alpha=2.0
-            k=11
+            k=3
             
             lam = torch.distributions.beta.Beta(torch.Tensor([alpha]), torch.Tensor([alpha])).sample()
             indices = torch.randperm(x.shape[0])  
@@ -366,7 +365,7 @@ class DGMMLoss(nn.Module):
         
         if self.knn:
             ## Knn loss
-            k=3
+            k=1
             y_ng = []
             for ix in x:
                 d  = torch.sum((x - ix)**2 ,dim=1).squeeze()             

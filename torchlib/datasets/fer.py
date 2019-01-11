@@ -70,7 +70,7 @@ class FERClassicDataset( dataProvide ):
         
         self.labels_org = self.labels
         self.labels = self.labels[ self.index ]
-        self.classes = np.unique( self.labels )
+        self.classes = [self.classes[ i ] for i in  np.unique( self.labels ) ]
         self.numclass = len(self.classes)  
               
 

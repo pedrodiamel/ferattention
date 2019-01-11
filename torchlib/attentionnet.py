@@ -83,7 +83,7 @@ class AttentionNeuralNet(NeuralNetAbstract):
         """
         
         cfg_opt={ 'momentum':momentum, 'weight_decay':weight_decay } 
-        cfg_scheduler={ 'step_size':100, 'gamma':0.1  }        
+        cfg_scheduler={ 'step_size':200, 'gamma':0.1  }        
         self.num_classes = num_classes
         
         super(AttentionNeuralNet, self).create( 

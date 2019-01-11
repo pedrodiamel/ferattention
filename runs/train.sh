@@ -11,27 +11,27 @@ BATCHSIZE=240
 LEARNING_RATE=0.0001
 MOMENTUM=0.5
 PRINT_FREQ=75
-WORKERS=80
-RESUME='model_best.pth.tar'
+WORKERS=20
+RESUME='chk000000.pth.tar' #chk000010, model_best
 GPU=0
 ARCH='atentionresnet34'
 LOSS='attgmm'
 OPT='adam'
 SCHEDULER='step'
-NUMCLASS=7
+NUMCLASS=7 #7, 8
 NUMCHANNELS=3
 DIM=64
 SNAPSHOT=10
 IMAGESIZE=128
 KFOLD=0
 NACTOR=10
-EXP_NAME='fer_'$ARCH'_'$LOSS'_'$OPT'_'$NAMEDATASET'_dim'$DIM'_preactresnet18x32_fold'$KFOLD'_006'
+EXP_NAME='fer_'$ARCH'_'$LOSS'_'$OPT'_'$NAMEDATASET'_dim'$DIM'_preactresnet18x32_fold'$KFOLD'_000'
 
 
-#rm -rf $PROJECT/$EXP_NAME/$EXP_NAME.log
-#rm -rf $PROJECT/$EXP_NAME/
-#mkdir $PROJECT    
-#mkdir $PROJECT/$EXP_NAME  
+rm -rf $PROJECT/$EXP_NAME/$EXP_NAME.log
+rm -rf $PROJECT/$EXP_NAME/
+mkdir $PROJECT    
+mkdir $PROJECT/$EXP_NAME  
 
 
 python ../train.py \

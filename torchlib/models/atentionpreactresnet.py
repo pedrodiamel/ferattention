@@ -229,6 +229,7 @@ class AtentionResNet(nn.Module):
         self.reconstruction = nn.Sequential(
             ConvRelu(num_filters, num_filters),
             nn.Conv2d(in_channels=num_filters, out_channels=num_channels, kernel_size=1, stride=1, padding=0, bias=True),
+            #nn.LeakyReLU(0.2, inplace=True),
         )
         
         self.stn = stn.STN()
@@ -276,16 +277,22 @@ class AtentionResNet(nn.Module):
         #\sigma(A) * F(I) 
         attmap = torch.mul( F.sigmoid( g_att ) ,  g_ft )       
         att = self.reconstruction( attmap )   
-        att = BiReLU().apply( att ) 
+        #att = BiReLU().apply( att ) 
+        #att = att * ( att > 0.1 ).float()
+        att = att * ( torch.abs(att) > 0.02 ).float()
+        
         
         #stn
-        theta = self.stn( att.mean(dim=1).unsqueeze(dim=1).detach() ) # 
+        theta = self.stn( att.mean(dim=1).unsqueeze(dim=1).detach() ) 
         grid = F.affine_grid(theta, att.size())
-        att_t = F.grid_sample(att, grid)       
+        att_t = F.grid_sample(att, grid)   
+        #att_t = att_t * ( att_t >= 0.1 ).float()
+        att_t = att_t * ( torch.abs(att_t) >= 0.02 ).float()
                       
         
         #classification
         att_pool = F.avg_pool2d(att_t, 4) # <- 32x32 source       
+        #att_pool = F.dropout(att_pool, training=self.training)        
         z, y = self.netclass( att_pool )
                 
         return z, y, att, theta, att_t, g_att, g_ft 

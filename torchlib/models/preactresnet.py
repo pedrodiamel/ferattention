@@ -172,7 +172,7 @@ class PreActResEmbNet(nn.Module):
         out = self.layer2(out)
         out = self.layer3(out)
         out = self.layer4(out)
-        out = F.avg_pool2d(out, out.shape[3] )        
+        out = F.avg_pool2d(out, out.shape[3] )              
         out = out.view(out.size(0), -1)
         out = self.linear(out)
         return out
@@ -223,7 +223,9 @@ class PreActResEmbExNet(nn.Module):
         out = self.layer3(out)
         out = self.layer4(out)
                
-        out = F.avg_pool2d(out, 4 )        
+        out = F.avg_pool2d(out, 4 )  
+        #out = F.adaptive_avg_pool2d( out, 1 )
+        
         out = out.view(out.size(0), -1)
         out = self.linear(out)
         y = self.classification(out)      

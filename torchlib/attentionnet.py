@@ -83,7 +83,7 @@ class AttentionNeuralNet(NeuralNetAbstract):
         """
         
         cfg_opt={ 'momentum':momentum, 'weight_decay':weight_decay } 
-        cfg_scheduler={ 'step_size':200, 'gamma':0.1  }        
+        cfg_scheduler={ 'step_size':100, 'gamma':0.1  }        
         self.num_classes = num_classes
         
         super(AttentionNeuralNet, self).create( 
@@ -142,7 +142,7 @@ class AttentionNeuralNet(NeuralNetAbstract):
                 y_theta = y_theta.cuda()
             
             # fit (forward)            
-            z, y_lab_hat, att, theta, _, _, _ = self.net( x_img )                
+            z, y_lab_hat, att, theta, _, _, _ = self.net( x_img, x_img*y_mask[:,1,...].unsqueeze(dim=1) )                
             
             # measure accuracy and record loss           
             loss_bce  = self.criterion_bce(  y_lab_hat, y_lab.long() )

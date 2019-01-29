@@ -2,8 +2,6 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 
-
-
 <div>
 <div align="center" >
 <img src="rec/emo320x240.gif" width="420">

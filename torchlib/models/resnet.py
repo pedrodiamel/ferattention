@@ -114,7 +114,10 @@ class ResNet(nn.Module):
         self.layer2 = self._make_layer(block, initial_channels*2, layers[1], stride=2)
         self.layer3 = self._make_layer(block, initial_channels*4, layers[2], stride=2)
         self.layer4 = self._make_layer(block, initial_channels*8, layers[3], stride=2)
-        self.avgpool = nn.AvgPool2d(7, stride=1)
+        #self.avgpool = nn.AvgPool2d(7, stride=1)
+        self.avgpool = nn.AdaptiveAvgPool2d(1)
+                
+        
         self.fc = nn.Linear(initial_channels*8*block.expansion, num_classes)
 
         for m in self.modules():
@@ -147,7 +150,6 @@ class ResNet(nn.Module):
         x = self.bn1(x)
         x = self.relu(x)
         x = self.maxpool(x)
-
         x = self.layer1(x)
         x = self.layer2(x)
         x = self.layer3(x)
@@ -234,12 +236,3 @@ def resnet152(pretrained=False, **kwargs):
         utl.load_state_dict(model.state_dict(), model_zoo.load_url(model_urls['resnet152']))
 
     return model
-
-def test():
-    num_channels=1
-    num_classes=10
-    net = resnet18( False, num_classes=num_classes, num_channels=num_channels )
-    y = net( torch.randn(1,num_channels,224,224) )
-    print(y.size())
-
-#test()

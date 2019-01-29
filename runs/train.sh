@@ -12,7 +12,7 @@ LEARNING_RATE=0.0001
 MOMENTUM=0.5
 PRINT_FREQ=75
 WORKERS=20
-RESUME='chk000000.pth.tar' #chk000010, model_best
+RESUME='chk000350.pth.tar' #chk000010, model_best
 GPU=0
 ARCH='atentionresnet34'
 LOSS='attgmm'
@@ -20,12 +20,12 @@ OPT='adam'
 SCHEDULER='step'
 NUMCLASS=7 #7, 8
 NUMCHANNELS=3
-DIM=64
+DIM=32
 SNAPSHOT=10
 IMAGESIZE=128
 KFOLD=0
 NACTOR=10
-EXP_NAME='fer_'$ARCH'_'$LOSS'_'$OPT'_'$NAMEDATASET'_dim'$DIM'_preactresnet18x32_fold'$KFOLD'_000'
+EXP_NAME='fer_'$ARCH'_'$LOSS'_'$OPT'_'$NAMEDATASET'_dim'$DIM'_preactresnet18x64_fold'$KFOLD'_003'
 
 
 rm -rf $PROJECT/$EXP_NAME/$EXP_NAME.log

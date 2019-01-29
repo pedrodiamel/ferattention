@@ -214,6 +214,15 @@ class PreActResEmbExNet(nn.Module):
             self.in_planes = planes * block.expansion
         return nn.Sequential(*layers)
 
+    
+    def weights_init(self):
+        for m in self.modules():
+            if isinstance(m, torch.nn.Conv2d) or isinstance(m, nn.Linear):
+                torch.nn.init.xavier_uniform(m.weight.data)    
+            elif isinstance(m, nn.BatchNorm2d):
+                m.weight.data.fill_(1)
+                m.bias.data.zero_()
+    
     def forward(self, x ):
         
         out = x
@@ -223,8 +232,8 @@ class PreActResEmbExNet(nn.Module):
         out = self.layer3(out)
         out = self.layer4(out)
                
-        out = F.avg_pool2d(out, 4 )  
-        #out = F.adaptive_avg_pool2d( out, 1 )
+        #out = F.avg_pool2d(out, 4 )  
+        out = F.adaptive_avg_pool2d( out, 1 )
         
         out = out.view(out.size(0), -1)
         out = self.linear(out)
@@ -250,15 +259,3 @@ def preactresembnetex34( pretrained=False, **kwargs ):
 
 
 
-def test():
-    num_channels=1
-    num_classes=10
-    dim=10
-    
-    net = preactresembnetex18( False, dim=dim, num_channels=num_channels, num_classes=num_classes )
-    xemb, y = net(  torch.randn(1, num_channels, 64, 64 ) ) 
-    
-    print( xemb.shape)
-    print( y.shape )
-
-#test()

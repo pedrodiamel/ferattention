@@ -1,4 +1,5 @@
 
+import random
 
 from torch import nn
 from torch.nn import functional as F
@@ -41,8 +42,12 @@ def atentionresnet34(pretrained=False, **kwargs):
     model = AtentionResNet(encoder_depth=34 ,pretrained=pretrained, **kwargs)
 
     if pretrained == True:
-        #model.load_state_dict(state['model'])
+#         print('>> pretrained: {} !!!'.format('chk000050') )
+#         state = torch.load('../out/fer_atentionresnet34_attgmm_adam_bu3dfe_dim64_preactresnet18x32_fold0_001/models/chk000350.pth.tar')
+#         model.load_state_dict( state['state_dict'] )
+#         model.netclass.weights_init()     
         pass
+    
     return model
 
 
@@ -234,8 +239,8 @@ class AtentionResNet(nn.Module):
         
         self.stn = stn.STN()
 
-        #classification and reconstruction               
-        self.netclass = preactresnet.preactresembnetex18( num_classes=num_classes, num_channels=num_channels  )
+        #classification and reconstruction 
+        self.netclass = preactresnet.preactresembnetex18( num_classes=num_classes, dim=dim, num_channels=num_channels  )
         
     
     
@@ -246,9 +251,8 @@ class AtentionResNet(nn.Module):
         return nn.Sequential(*layers)
         
 
-    def forward(self, x ):
-        
-        
+    def forward(self, x, x_org=None ):
+                
                 
         #attention module
         conv1 = self.conv1(x)
@@ -288,13 +292,34 @@ class AtentionResNet(nn.Module):
         att_t = F.grid_sample(att, grid)   
         #att_t = att_t * ( att_t >= 0.1 ).float()
         att_t = att_t * ( torch.abs(att_t) >= 0.02 ).float()
-                      
         
+        
+        att_out = att_t        
+#         if self.training:
+# #             att_out = att            
+#             if random.random() < 0.50:
+#                 if random.random() < 0.50:
+#                     att_out = x_org
+#                 else: 
+#                     att_out = att
+              
         #classification
-        att_pool = F.avg_pool2d(att_t, 4) # <- 32x32 source       
+        att_pool = F.avg_pool2d(att_out, 4) # <- 32x32 source       
         #att_pool = F.dropout(att_pool, training=self.training)        
         z, y = self.netclass( att_pool )
-                
+              
+        #ensamble classification
+#         x = x * ( torch.abs(att) <= 0.02 ).float()
+#         out = [ att_t,  att, x ]
+#         z=[]; y=[]
+#         for o in out:
+#             att_pool = F.avg_pool2d(o, 4) # <- 32x32 source 
+#             zs, ys = self.netclass( att_pool )
+#             z.append(zs)
+#             y.append(ys)            
+#         z = torch.stack(z, dim=2).mean(dim=2)
+#         y = torch.stack(y, dim=2).mean(dim=2)
+                  
         return z, y, att, theta, att_t, g_att, g_ft 
     
 

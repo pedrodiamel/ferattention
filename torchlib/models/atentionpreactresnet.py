@@ -295,30 +295,30 @@ class AtentionResNet(nn.Module):
         att_t = att_t * ( torch.abs(att_t) >= 0.02 ).float()
         
         
-#         att_out = att_t        
-#         if self.training:
-# #             att_out = att            
-#             if random.random() < 0.50:
-#                 if random.random() < 0.25:
-#                     att_out = x_org
-#                 else: 
-#                     att_out = att
+        att_out = att_t        
+        if self.training:
+            att_out = att_t            
+            if random.random() < 0.50:
+                if random.random() < 0.25:
+                    att_out = x_org
+                else: 
+                    att_out = att
               
-#         #classification
-#         att_pool = F.avg_pool2d(att_out, 4) # <- 32x32 source                     
-#         z, y = self.netclass( att_pool )
+        #classification
+        att_pool = F.avg_pool2d(att_out, 4) # <- 32x32 source                     
+        z, y = self.netclass( att_pool )
               
-        #ensamble classification
-        x = x * ( torch.abs(att) <= 0.02 ).float()
-        out = [ att_t,  att  ] #x
-        z=[]; y=[]
-        for o in out:
-            att_pool = F.avg_pool2d(o, 4) # <- 32x32 source 
-            zs, ys = self.netclass( att_pool )
-            z.append(zs)
-            y.append(ys)            
-        z = torch.stack(z, dim=2).mean(dim=2)
-        y = torch.stack(y, dim=2).mean(dim=2)
+#         #ensamble classification
+#         x = x * ( torch.abs(att) <= 0.02 ).float()
+#         out = [ att_t,  att  ] #x
+#         z=[]; y=[]
+#         for o in out:
+#             att_pool = F.avg_pool2d(o, 4) # <- 32x32 source 
+#             zs, ys = self.netclass( att_pool )
+#             z.append(zs)
+#             y.append(ys)            
+#         z = torch.stack(z, dim=2).mean(dim=2)
+#         y = torch.stack(y, dim=2).mean(dim=2)
                   
         return z, y, att, theta, att_t, g_att, g_ft 
     

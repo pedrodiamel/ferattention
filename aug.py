@@ -40,15 +40,23 @@ def get_transforms_aug( size_input ):
         
         #------------------------------------------------------------------
         #Colors           
-        mtrans.ToRandomTransform( mtrans.RandomBrightness( factor=0.25 ), prob=0.50 ),
-        mtrans.ToRandomTransform( mtrans.RandomContrast( factor=0.25 ), prob=0.50 ),
-        mtrans.ToRandomTransform( mtrans.RandomGamma( factor=0.25 ), prob=0.50 ),
-        mtrans.ToRandomTransform( mtrans.RandomRGBPermutation(), prob=0.50 ),
-        
+#         mtrans.ToRandomTransform( mtrans.RandomBrightness( factor=0.25 ), prob=0.50 ),
+#         mtrans.ToRandomTransform( mtrans.RandomContrast( factor=0.25 ), prob=0.50 ),
+#         mtrans.ToRandomTransform( mtrans.RandomGamma( factor=0.25 ), prob=0.50 ),
+#         mtrans.ToRandomTransform( mtrans.RandomRGBPermutation(), prob=0.50 ),
 #         mtrans.ToRandomTransform( mtrans.CLAHE(), prob=0.25 ),
-        mtrans.ToRandomTransform(mtrans.ToGaussianBlur( sigma=0.05 ), prob=0.25 ),
+#         mtrans.ToRandomTransform(mtrans.ToGaussianBlur( sigma=0.05 ), prob=0.25 ),
 #         mtrans.ToRandomTransform(mtrans.ToGaussianNoise( sigma=0.05 ), prob=0.25 ),
-       
+        
+        
+        mtrans.ToRandomTransform( mtrans.RandomBrightness( factor=0.25 ), prob=0.50 ), 
+        mtrans.ToRandomTransform( mtrans.RandomContrast( factor=0.25 ), prob=0.50 ), 
+        mtrans.ToRandomTransform( mtrans.RandomGamma( factor=0.25 ), prob=0.50 ), 
+        mtrans.ToRandomTransform( mtrans.RandomRGBPermutation(), prob=0.50 ), 
+        mtrans.ToRandomTransform( mtrans.CLAHE(), prob=0.25 ), 
+        mtrans.ToRandomTransform( mtrans.ToGaussianBlur( sigma=0.05 ), prob=0.25 ), 
+        
+        
         #------------------------------------------------------------------
         mtrans.ToTensor(),
         normalize,
@@ -61,6 +69,7 @@ def get_transforms_det(size_input):
     return transforms.Compose([
         mtrans.ToResize( (size_input, size_input), resize_mode='squash' ) ,
         #mtrans.ToResize( (size_input, size_input), resize_mode='square', padding_mode=cv2.BORDER_REPLICATE ) ,
+        mtrans.ToGrayscale(),
         mtrans.ToTensor(),
         normalize,
         ])

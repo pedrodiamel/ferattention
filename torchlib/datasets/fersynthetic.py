@@ -101,8 +101,7 @@ class SyntheticFaceDataset( data.Dataset ):
         if self.generate == 'image':
             obj = ObjectImageTransform( image  )
             
-        elif self.generate == 'image_and_mask':   
-                        
+        elif self.generate == 'image_and_mask':                           
             
             image_org, image_ilu, mask, h = self.ren.generate( image, back )  
                         
@@ -179,14 +178,12 @@ class SecuencialSyntheticFaceDataset( data.Dataset ):
         
         self.transform_image = transform_image 
         self.transform_data = transform_data 
-        
-        
+                
         self.labels_index = list()
         for cl in range( self.num_classes ):             
             indx = np.where( self.labels==cl )[0]
             self.labels_index.append( indx )            
-        
-  
+    
 
     def __len__(self):
         return self.count

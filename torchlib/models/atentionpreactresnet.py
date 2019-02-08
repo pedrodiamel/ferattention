@@ -237,8 +237,8 @@ class AtentionResNet(nn.Module):
             #nn.LeakyReLU(0.2, inplace=True),
         )
         
+        #stn
         self.stn = stn.STN()
-
         #classification and reconstruction 
         self.netclass = preactresnet.preactresembnetex18( num_classes=num_classes, dim=dim, num_channels=num_channels  )
         
@@ -280,6 +280,7 @@ class AtentionResNet(nn.Module):
         #fusion
         #\sigma(A) * F(I) 
         attmap = torch.mul( F.sigmoid( g_att ) ,  g_ft )       
+        
         att = self.reconstruction( attmap )   
         #att = BiReLU().apply( att ) 
         #att = att * ( att > 0.1 ).float()
@@ -294,31 +295,30 @@ class AtentionResNet(nn.Module):
         att_t = att_t * ( torch.abs(att_t) >= 0.02 ).float()
         
         
-        att_out = att_t        
+#         att_out = att_t        
 #         if self.training:
 # #             att_out = att            
 #             if random.random() < 0.50:
-#                 if random.random() < 0.50:
+#                 if random.random() < 0.25:
 #                     att_out = x_org
 #                 else: 
 #                     att_out = att
               
-        #classification
-        att_pool = F.avg_pool2d(att_out, 4) # <- 32x32 source       
-        #att_pool = F.dropout(att_pool, training=self.training)        
-        z, y = self.netclass( att_pool )
+#         #classification
+#         att_pool = F.avg_pool2d(att_out, 4) # <- 32x32 source                     
+#         z, y = self.netclass( att_pool )
               
         #ensamble classification
-#         x = x * ( torch.abs(att) <= 0.02 ).float()
-#         out = [ att_t,  att, x ]
-#         z=[]; y=[]
-#         for o in out:
-#             att_pool = F.avg_pool2d(o, 4) # <- 32x32 source 
-#             zs, ys = self.netclass( att_pool )
-#             z.append(zs)
-#             y.append(ys)            
-#         z = torch.stack(z, dim=2).mean(dim=2)
-#         y = torch.stack(y, dim=2).mean(dim=2)
+        x = x * ( torch.abs(att) <= 0.02 ).float()
+        out = [ att_t,  att  ] #x
+        z=[]; y=[]
+        for o in out:
+            att_pool = F.avg_pool2d(o, 4) # <- 32x32 source 
+            zs, ys = self.netclass( att_pool )
+            z.append(zs)
+            y.append(ys)            
+        z = torch.stack(z, dim=2).mean(dim=2)
+        y = torch.stack(y, dim=2).mean(dim=2)
                   
         return z, y, att, theta, att_t, g_att, g_ft 
     

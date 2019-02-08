@@ -51,7 +51,7 @@ class CelebaDataset( dataProvide ):
         self.transform = transform   
         self.data      = make_dataset( self.pathname, self.file_id, self.folder_images )
         #self.bboxs     = read_bbox( self.pathname, self.file_bbox)
-
+        self.labels = np.zeros( len(self.data) )
 
     def __len__(self):
         return len(self.data)
@@ -65,8 +65,9 @@ class CelebaDataset( dataProvide ):
         pathname   = self.data[idx][0]
         image      = np.array(self._loadimage(pathname), dtype=np.uint8)
         image      = image[30:-30,30:-30,:]
+        label      = self.labels[idx]
 
-        return image
+        return image, label
 
 
     def __repr__(self):

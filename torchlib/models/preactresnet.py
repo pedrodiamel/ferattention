@@ -257,5 +257,3 @@ def preactresembnetex34( pretrained=False, **kwargs ):
         pass
     return model    
 
-
-

@@ -148,7 +148,7 @@ def main():
             ),
         pathnameback=args.databack, 
         ext='jpg',
-        count=70000, #100000
+        #count=70000, #100000
         num_channels=num_channels,
         #iluminate=True, angle=45, translation=0.2, warp=0.1, factor=0.2,
         iluminate=True, angle=45, translation=0.3, warp=0.2, factor=0.2,
@@ -172,7 +172,7 @@ def main():
             ),
         pathnameback=args.databack, 
         ext='jpg',
-        count=1000, #10000
+        #count=1000, #10000
         num_channels=num_channels,
         #iluminate=True, angle=45, translation=0.2, warp=0.1, factor=0.2, 
         iluminate=True, angle=45, translation=0.3, warp=0.2, factor=0.2,         

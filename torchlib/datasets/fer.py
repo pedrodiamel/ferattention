@@ -233,7 +233,10 @@ class FERDarkClassicDataset( FERClassicDataset ):
         
         image_rot  = resize( image_rot, height=128,  width=128, interpolate_mode=cv2.INTER_LANCZOS4 )[:,:,0]
         mask_rot   = resize( mask_rot , height=128,  width=128, interpolate_mode=cv2.INTER_LINEAR )[:,:,0]
-        image_mask = (image_rot * mask_rot)
+        image_mask = (image_rot * mask_rot).astype(np.uint8)
         
+        #print(image_mask.shape)
+        #print(image_mask.min(), image_mask.max())
+                
         return image_mask, label
 

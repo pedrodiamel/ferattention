@@ -3,7 +3,7 @@
 # parameters
 DATABACK='~/.datasets/coco'
 DATA='~/.datasets'
-NAMEDATASET='ferblack' #bu3dfe, ferblack
+NAMEDATASET='affectnetdark' #bu3dfe, ferblack, 
 PROJECT='../out'
 EPOCHS=500
 BATCHSIZE=240 #128, 240

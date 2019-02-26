@@ -2,9 +2,9 @@
 
 
 PATHDATASET='~/.datasets/'
-NAMEDATASET='ck' #bu3dfe, ferblack, ck
+NAMEDATASET='affectnet' #bu3dfe, ferblack, ck, affectnetdark, affectnet, ferp
 PROJECT='../out'
-PROJECTNAME='feratt_atentionresnet34_attgmm_adam_ferblack_dim64_preactresnet18x32_fold0_000'
+PROJECTNAME='feratt_atentionresnet34_attgmm_adam_affectnetdark_dim64_preactresnet18x32_fold0_000'
 PATHNAMEOUT='../out'
 FILENAME='result.txt'
 PATHMODEL='models'

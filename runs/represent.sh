@@ -1,10 +1,9 @@
 #!/bin/bash
 
-
 PATHDATASET='~/.datasets/'
-NAMEDATASET='celeba' #bu3dfe, ferblack, ck, celeba
+NAMEDATASET='ferp' #bu3dfe, ferblack, ck, celeba, affectnetdark, affectnet, ferp
 PROJECT='../out'
-PROJECTNAME='feratt_atentionresnet34_attgmm_adam_ferblack_dim64_preactresnet18x32_fold0_000'
+PROJECTNAME='feratt_atentionresnet34_attgmm_adam_affectnetdark_dim64_preactresnet18x32_fold0_000'
 PATHNAMEOUT='../out'
 FILENAME='result.txt'
 PATHMODEL='models'
@@ -19,5 +18,4 @@ python ../represent.py \
 --pathnameout=$PATHNAMEOUT \
 --filename=$FILENAME \
 --model=$MODEL \
-
 

@@ -182,9 +182,9 @@ class SecuencialSyntheticFaceDataset( data.Dataset ):
         self.labels_index = list()
         for cl in range( self.num_classes ):             
             indx = np.where( self.labels==cl )[0]
-            self.labels_index.append( indx )            
-    
-
+            self.labels_index.append( indx )     
+        
+        
     def __len__(self):
         return self.count
 
@@ -194,7 +194,7 @@ class SecuencialSyntheticFaceDataset( data.Dataset ):
         
         idx = idx % self.num_classes        
         class_index = self.labels_index[ idx ]
-        n =  len( class_index )
+        n =  len( class_index )        
         idx = class_index[ random.randint(0,n-1) ]  
         image, label = self.data[ idx ]  
         

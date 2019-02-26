@@ -4,7 +4,7 @@ import pandas as pd # data processing, CSV file I/O (e.g. pd.read_csv)
 import cv2
 from pytvision.datasets.imageutl import dataProvide
 
-def make_dataset( path, metadata, org ):
+def make_dataset( path, metadata, train, org ):
     '''load file patch for disk
     '''
     
@@ -12,8 +12,12 @@ def make_dataset( path, metadata, org ):
     data = pd.read_csv( os.path.join( path, metadata) )   
     # filter dataset for only expression and valid image data
     #data = data[ [ exp in [0,1,2,3,4,5,6,7] for i,exp in enumerate(data['expression']) if (i != 235929 or i != 315313) ]   ] 
-    ifilter = np.array([ exp in [0,1,2,3,4,5,6,7] for i,exp in enumerate( data['expression'] )  ])        
-    ifilter[ np.array( [235929, 315313] if org else [235929, 315313, 126295]   )  ] = False
+    ifilter = np.array([ exp in [0,1,2,3,4,5,6,7] for i,exp in enumerate( data['expression'] )  ])    
+    
+    if train:
+        ifilter[ np.array( [235929, 315313] if org else [235929, 315313, 126295]   )  ] = False
+    
+    
     ifilter = np.where( ifilter == True )[0]
     return data, ifilter
 
@@ -59,8 +63,8 @@ class AffectNetProvide( dataProvide ):
         self.train           = train
         self.org             = org 
         
-        self.data, self.indexs = make_dataset( self.path, self.metadata, self.org  )
-        self.labels = [ self.emo2ck[ self.data['expression'][ self.indexs[i] ] ] for i in range(len(self.indexs))  ]
+        self.data, self.indexs = make_dataset( self.path, self.metadata, self.train, self.org  )
+        self.labels = np.array([ self.emo2ck[ self.data['expression'][ self.indexs[i] ] ] for i in range(len(self.indexs))  ])
         self.classes = np.unique( self.labels )
         self.numclass = len(self.classes)        
         
@@ -97,7 +101,7 @@ class AffectNetProvide( dataProvide ):
             )
     
 
-def create( path, train=True ):    
+def create_affect( path, train=True ):    
     folders_images='Manually_Annotated/Manually_Annotated_Images'
     metadata = 'training.csv'  if train else 'validation.csv' 
     return AffectNetProvide.create(
@@ -106,3 +110,15 @@ def create( path, train=True ):
         folders_images=folders_images, 
         metadata=metadata 
     )
+
+def create_affectdark( path, train ):
+    folders_images='affectnetdarck'
+    metadata = 'training.csv' if train else 'validation.csv' 
+    return AffectNetProvide.create(
+        path=path, 
+        train=train, 
+        folders_images=folders_images, 
+        metadata=metadata,
+        org=False
+    )    
+

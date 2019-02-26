@@ -82,10 +82,10 @@ def main():
     
     # experiments
     experiments = [ 
-        { 'name': namedataset, 'subset': FactoryDataset.training,   'real': True },
-        { 'name': namedataset, 'subset': FactoryDataset.validation, 'real': True },
-        { 'name': namedataset, 'subset': FactoryDataset.training,   'real': False },
-        { 'name': namedataset, 'subset': FactoryDataset.validation, 'real': False },
+        { 'name': namedataset,        'subset': FactoryDataset.training,   'real': True },
+        { 'name': namedataset,        'subset': FactoryDataset.validation, 'real': True },
+        { 'name': namedataset+'dark', 'subset': FactoryDataset.training,   'real': False },
+        { 'name': namedataset+'dark', 'subset': FactoryDataset.validation, 'real': False },
         ]
     
     # representation datasets
@@ -119,9 +119,7 @@ def main():
             dataset = []
                         
             # load dataset 
-            if breal:
-                
-                
+            if breal:               
                 
                 # real dataset 
                 dataset = Dataset(    
@@ -252,7 +250,7 @@ def main():
             Yto = data_emb_val['Y'] 
             
 
-            clf = KNeighborsClassifier(n_neighbors=21)
+            clf = KNeighborsClassifier(n_neighbors=3)
             #clf = GaussianNB()
             #clf = RandomForestClassifier(n_estimators=150, oob_score=True, random_state=123456)
             #clf = MLPClassifier(hidden_layer_sizes=(100,100), max_iter=100, alpha=1e-4,

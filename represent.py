@@ -79,6 +79,7 @@ def main():
     # experiments
     experiments = [ 
         { 'name': namedataset, 'subset': FactoryDataset.training,   'real': True },
+        { 'name': namedataset, 'subset': FactoryDataset.validation, 'real': True },
         ]
         
     # Load models

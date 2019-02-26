@@ -296,14 +296,15 @@ class AtentionResNet(nn.Module):
         
         
         att_out = att_t        
-        if self.training:
-            att_out = att_t            
-            if random.random() < 0.50:
-                if random.random() < 0.25:
-                    att_out = x_org
-                else: 
-                    att_out = att
-              
+#         if self.training:
+#             att_out = att_t            
+#             if random.random() < 0.50:
+#                 if random.random() < 0.25:
+#                     att_out = x_org
+#                 else: 
+#                     att_out = att
+        
+        
         #classification
         att_pool = F.avg_pool2d(att_out, 4) # <- 32x32 source                     
         z, y = self.netclass( att_pool )

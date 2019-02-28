@@ -4,11 +4,11 @@
 PATHDATASET='~/.datasets/'
 NAMEDATASET='affectnet' #bu3dfe, ferblack, ck, affectnetdark, affectnet, ferp
 PROJECT='../out'
-PROJECTNAME='feratt_atentionresnet34_attgmm_adam_affectnetdark_dim64_preactresnet18x32_fold0_000'
+PROJECTNAME='feratt_atentionresnet34_attgmm_adam_affectnetdark_dim64_preactresnet18x32_fold0_002'
 PATHNAMEOUT='../out'
 FILENAME='result.txt'
 PATHMODEL='models'
-NAMEMODEL='model_best.pth.tar' #'model_best.pth.tar' #'chk000565.pth.tar'
+NAMEMODEL='chk000048.pth.tar' #'model_best.pth.tar' #'chk000565.pth.tar'
 MODEL=$PROJECT/$PROJECTNAME/$PATHMODEL/$NAMEMODEL  
 
 python ../eval.py \

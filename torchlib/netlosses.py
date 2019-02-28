@@ -25,7 +25,7 @@ def attLoss( x_org, y_mask, att, y_theta, theta ):
     #loss_att = ( torch.abs(att*y_mask[:,0,...].unsqueeze(dim=1)) ).sum() / y_mask[:,0,...].sum()      
     loss_att = torch.clamp(loss_att, max=30)    
     
-    return 2*loss_att + loss_theta
+    return loss_att + 0.5*loss_theta
 
 
 class WeightedMCEloss(nn.Module):

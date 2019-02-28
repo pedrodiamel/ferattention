@@ -120,7 +120,8 @@ class Generator(object):
         '''generate image
         '''
         
-        image = cv2.resize(image, (256,256) ) 
+        imsize = 128 #256
+        image = cv2.resize(image, (imsize,imsize) ) 
         
         im_h,im_w = image.shape[:2]
         bk_h,bk_w = back.shape[:2]

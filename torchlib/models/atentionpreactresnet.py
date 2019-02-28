@@ -306,21 +306,23 @@ class AtentionResNet(nn.Module):
         
         
         #classification
-        att_pool = F.avg_pool2d(att_out, 4) # <- 32x32 source                     
+        att_pool = F.avg_pool2d(att_out, 2) # <- 32x32 source                     
         z, y = self.netclass( att_pool )
-              
+  
+
 #         #ensamble classification
-#         x = x * ( torch.abs(att) <= 0.02 ).float()
+#         #x = x * ( torch.abs(att) <= 0.02 ).float()
 #         out = [ att_t,  att  ] #x
 #         z=[]; y=[]
 #         for o in out:
-#             att_pool = F.avg_pool2d(o, 4) # <- 32x32 source 
+#             att_pool = F.avg_pool2d(o, 2) # <- 32x32 source 
 #             zs, ys = self.netclass( att_pool )
 #             z.append(zs)
 #             y.append(ys)            
 #         z = torch.stack(z, dim=2).mean(dim=2)
 #         y = torch.stack(y, dim=2).mean(dim=2)
                   
+            
         return z, y, att, theta, att_t, g_att, g_ft 
     
 

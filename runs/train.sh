@@ -6,7 +6,7 @@ DATA='~/.datasets'
 NAMEDATASET='affectnetdark' #bu3dfe, ferblack, 
 PROJECT='../out'
 EPOCHS=500
-BATCHSIZE=240 #128, 240
+BATCHSIZE=128 #128, 240
 LEARNING_RATE=0.0001
 MOMENTUM=0.5
 PRINT_FREQ=100
@@ -24,7 +24,7 @@ SNAPSHOT=10
 IMAGESIZE=128
 KFOLD=0
 NACTOR=10
-EXP_NAME='feratt_'$ARCH'_'$LOSS'_'$OPT'_'$NAMEDATASET'_dim'$DIM'_preactresnet18x32_fold'$KFOLD'_000'
+EXP_NAME='feratt_'$ARCH'_'$LOSS'_'$OPT'_'$NAMEDATASET'_dim'$DIM'_preactresnet18x32_fold'$KFOLD'_002'
 
 
 rm -rf $PROJECT/$EXP_NAME/$EXP_NAME.log

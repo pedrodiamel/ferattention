@@ -232,6 +232,7 @@ class PreActResEmbExNet(nn.Module):
         out = self.layer3(out)
         out = self.layer4(out)
                
+        #out = F.avg_pool2d(out, out.shape[3] )
         #out = F.avg_pool2d(out, 4 )  
         out = F.adaptive_avg_pool2d( out, 1 )
         
@@ -256,6 +257,4 @@ def preactresembnetex34( pretrained=False, **kwargs ):
         #model.load_state_dict(model_zoo.load_url(model_urls['resnet18']))
         pass
     return model    
-
-
 

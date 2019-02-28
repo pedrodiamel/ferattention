@@ -111,7 +111,7 @@ class AttentionNeuralNet(NeuralNetAbstract):
         self.logger_val   = Logger( 'Val  ', ['loss', 'loss_gmm', 'loss_bce', 'loss_att' ], [ 'topk', 'gmm'], self.plotter )
 
         self.visheatmap = gph.HeatMapVisdom(env_name=self.nameproject, heatsize=(100,100) )
-        self.visimshow  = gph.ImageVisdom(env_name=self.nameproject, imsize=(100,100) )
+        #self.visimshow  = gph.ImageVisdom(env_name=self.nameproject, imsize=(100,100) )
 
       
     def training(self, data_loader, epoch=0):        
@@ -156,7 +156,7 @@ class AttentionNeuralNet(NeuralNetAbstract):
             
             # optimizer
             self.optimizer.zero_grad()
-            (loss).backward() #batch_size
+            (loss*batch_size).backward() #
             self.optimizer.step()
             
             # update
@@ -287,15 +287,42 @@ class AttentionNeuralNet(NeuralNetAbstract):
         return ids, masks
 
     
+    def representation( self, dataloader, breal=True ):
+        Y_labs = []
+        Y_lab_hats = []
+        Zs = []         
+        self.net.eval()
+        with torch.no_grad():
+            for i_batch, sample in enumerate( tqdm(dataloader) ):
+
+                if breal:                 
+                    x_img, y_lab = sample['image'], sample['label']
+                    y_lab = y_lab.argmax(dim=1)
+                else:
+                    x_org, x_img, y_mask, y_lab = sample
+                    y_lab=y_lab[:,0]
+
+                if self.cuda:
+                    x_img = x_img.cuda()
+
+                z, y_lab_hat, _,_,_,_,_ = self.net( x_img )
+                Y_labs.append(y_lab)
+                Y_lab_hats.append(y_lab_hat.data.cpu())
+                Zs.append(z.data.cpu())
+                
+        Y_labs = np.concatenate( Y_labs, axis=0 )
+        Y_lab_hats = np.concatenate( Y_lab_hats, axis=0 )
+        Zs = np.concatenate( Zs, axis=0 )        
+        return Y_labs, Y_lab_hats, Zs
+    
+    
     def __call__(self, image ):        
-        
         # switch to evaluate mode
         self.net.eval()
         with torch.no_grad():
             x = image.cuda() if self.cuda else image    
             z, y_lab_hat, att, theta, att_t, fmap, srf = self.net(x)                         
-            y_lab_hat = F.softmax( y_lab_hat, dim=1 )
-            
+            y_lab_hat = F.softmax( y_lab_hat, dim=1 )            
         return z, y_lab_hat, att, theta, att_t, fmap, srf
 
 

@@ -54,8 +54,7 @@ def transform(image, mask, angle=360, translation=0.2, warp=0.0, padding=cv2.BOR
     theta = param2theta( mat_r, mat_t, mat_w, w, h )
     return image, mask, theta
     
-def norm(image, mask=None):
-    
+def norm(image, mask=None):    
     image = image.astype(np.float)
     for i in range(3):
         image_norm = image[:,:,i]
@@ -114,7 +113,6 @@ class Generator(object):
         #image_org = back*(1-mask) + (mask)*image   
         image_ilu = back*(1-mask) + (mask)*image_ilu
         
-        
         return image_org, image_ilu, mask, h
     
 
@@ -122,7 +120,8 @@ class Generator(object):
         '''generate image
         '''
         
-        image = cv2.resize(image, (256,256) ) 
+        imsize = 128 #256
+        image = cv2.resize(image, (imsize,imsize) ) 
         
         im_h,im_w = image.shape[:2]
         bk_h,bk_w = back.shape[:2]

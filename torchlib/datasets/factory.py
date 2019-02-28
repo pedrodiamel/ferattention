@@ -13,6 +13,7 @@ from . import stanford_online_products
 from . import afew
 from . import celeba
 from . import ferfolder
+from . import affect
 
 
 def create_folder(pathname, name):    
@@ -28,6 +29,7 @@ class FactoryDataset(object):
     validation = 'val'
     test = 'test'
 
+    # pytorch datasets
     mnist='mnist'
     fashion='fashion'
     emnist='emnist'
@@ -36,27 +38,35 @@ class FactoryDataset(object):
     stl10='stl10'
     svhn='svhn'
 
+    # kaggle
     imaterialist='imaterialist'
-    
+
+    # facial expression
     ferp='ferp'
     ck='ck'
+    ckp='ckp'
     jaffe='jaffe'
     bu3dfe='bu3dfe'
     afew='afew'
     celeba='celeba'
-    ferblack='ferblack'
+    affect='affectnet'
+#     ferblack='ferblack'
+        
     
+    ckdark='ckdark'
+    ckpdark='ckpdark'
+    jaffedark='jaffedark'
+    bu3dfedark='bu3dfedark'
+    affectdark='affectnetdark'
     
-
+        
+    # metric learning     
     cub2011='cub2011'
     cars196='cars196'
     stanford_online_products='stanford_online_products'
     cub2011metric='cub2011metric'
     cars196metric='cars196metric'
-
-
     
-
     
     @classmethod
     def _checksubset(self, subset): 
@@ -161,7 +171,6 @@ class FactoryDataset(object):
             data = ferp.FERPDataset( pathname, subfolder, download=download )
 
         elif name == 'ck':
-            #idenselect = [] # np.arange(20) + 0
             btrain=(subset=='train') 
             pathname = create_folder(pathname, name)
             data = fer.FERClassicDataset(pathname, 'ck', idenselect=idenselect, train=btrain )
@@ -179,7 +188,6 @@ class FactoryDataset(object):
         elif name == 'bu3dfe':
             btrain=(subset=='train')
             pathname = create_folder(pathname, name) 
-            #idenselect = [] #np.array([0,1,2,3,4,5,6,7,8,9]) + 20
             data = fer.FERClassicDataset(pathname, 'bu3dfe', idenselect=idenselect, train=btrain )
 
         elif name == 'afew':  
@@ -192,15 +200,49 @@ class FactoryDataset(object):
             btrain=(subset=='train')
             pathname = create_folder(pathname, name) 
             data = celeba.CelebaDataset(pathname, train=btrain, download=download)
-
             
-        elif name == 'ferblack': 
+
+        elif name == 'affectnet':
             btrain=(subset=='train')
-            pathname = create_folder(pathname, name) 
-            data = ferfolder.FERFolderDataset(pathname, train=btrain, idenselect=idenselect, download=download)        
-            data.labels = np.array( data.labels )
+            pathname = create_folder(pathname, name)
+            data = affect.create_affect(path=pathname, train=btrain )
+            
+#         elif name == 'ferblack': 
+#             btrain=(subset=='train')
+#             pathname = create_folder(pathname, name) 
+#             data = ferfolder.FERFolderDataset(pathname, train=btrain, idenselect=idenselect, download=download)        
+#             data.labels = np.array( data.labels )
+                        
+            
+        elif name == 'ckdark':
+            btrain=(subset=='train') 
+            pathname = create_folder(pathname, 'ck')
+            data = fer.FERDarkClassicDataset(pathname, 'ck', idenselect=idenselect, train=btrain )
+
+        elif name == 'ckpdark':
+            btrain=(subset=='train')
+            pathname = create_folder(pathname, 'ckp')
+            data = fer.FERDarkClassicDataset(pathname, 'ckp', idenselect=idenselect, train=btrain )
+            
+        elif name == 'bu3dfedark':
+            btrain=(subset=='train')
+            pathname = create_folder(pathname, 'bu3dfe')
+            data = fer.FERDarkClassicDataset(pathname, 'bu3dfe', idenselect=idenselect, train=btrain )
+
+        elif name == 'jaffedark':
+            btrain=(subset=='train')
+            pathname = create_folder(pathname, 'jaffe')
+            data = fer.FERDarkClassicDataset(pathname, 'jaffe', idenselect=idenselect, train=btrain )
+            
+        elif name == 'affectnetdark':
+            btrain=(subset=='train')
+            pathname = create_folder(pathname, 'affectnet')
+            data = affect.create_affectdark(path=pathname, train=btrain )
             
 
+            
+            
+        
         # metric learning dataset
 
         elif name == 'cub2011metric':  

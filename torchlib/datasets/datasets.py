@@ -37,7 +37,7 @@ class Dataset( object ):
         if count is None: count = len(data)
         self.count = count
         self.data = data
-        self.num_channels=num_channels        
+        self.num_channels = num_channels        
         self.transform = transform   
         self.labels = data.labels
         self.classes = np.unique(self.labels) 

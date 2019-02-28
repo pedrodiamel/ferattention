@@ -67,6 +67,7 @@ class SyntheticFaceDataset( data.Dataset ):
             self.databack = imutl.imageProvide( pathnameback, ext=ext ) 
         
         self.num_classes=data.numclass
+        self.labels = data.labels
         self.num_channels = num_channels
         self.generate = generate
         self.ren = Generator( iluminate, angle, translation, warp, factor )        
@@ -88,7 +89,6 @@ class SyntheticFaceDataset( data.Dataset ):
         #image = F.equalization(image,A,A_inv)
         image = utility.to_channels(image, self.num_channels)
         
-        
         # read background 
         if self.bbackimage:
             idxk = random.randint(1, len(self.databack) - 1 )
@@ -101,8 +101,7 @@ class SyntheticFaceDataset( data.Dataset ):
         if self.generate == 'image':
             obj = ObjectImageTransform( image  )
             
-        elif self.generate == 'image_and_mask':   
-                        
+        elif self.generate == 'image_and_mask':                           
             
             image_org, image_ilu, mask, h = self.ren.generate( image, back )  
                         
@@ -179,35 +178,30 @@ class SecuencialSyntheticFaceDataset( data.Dataset ):
         
         self.transform_image = transform_image 
         self.transform_data = transform_data 
-        
-        
+                
         self.labels_index = list()
         for cl in range( self.num_classes ):             
             indx = np.where( self.labels==cl )[0]
-            self.labels_index.append( indx )            
+            self.labels_index.append( indx )     
         
-  
-
+        
     def __len__(self):
         return self.count
 
     def __getitem__(self, idx):
 
-        # read image 
-        
+        # read image         
         idx = idx % self.num_classes        
         class_index = self.labels_index[ idx ]
-        n =  len( class_index )
+        n =  len( class_index )        
         idx = class_index[ random.randint(0,n-1) ]  
         image, label = self.data[ idx ]  
         
-        #image, label = self.data[ (idx)%len(self.data)  ]
-        
+        #image, label = self.data[ (idx)%len(self.data)  ]        
         
         #A,A_inv = F.compute_norm_mat( image.shape[1], image.shape[0] )
         #image = F.equalization(image,A,A_inv)
         image = utility.to_channels(image, self.num_channels)
-        
         
         # read background 
         if self.bbackimage:

@@ -9,21 +9,23 @@ def attLoss( x_org, y_mask, att, y_theta, theta ):
     
     grid_org = F.affine_grid(y_theta, x_org.size())
     grid_est = F.affine_grid(theta, x_org.size())
+    
     x_org_t = F.grid_sample(x_org, grid_org)
     x_org_te = F.grid_sample(x_org, grid_est)    
     
     #loss_theta = ((y_theta - theta) ** 2).mean()    
     #loss_theta = F.mse_loss( theta.view(-1, 3*2 ) , y_theta.view(-1, 3*2 ) )
-    loss_theta = ((x_org_t - x_org_te) ** 2).mean()  
+    loss_theta = ((x_org_t - x_org_te) ** 2).mean()
+    loss_att = ((( (x_org*y_mask[:,1,...].unsqueeze(dim=1)) - att ) ** 2)).mean()    
+    
     
     #loss_att = ((((x_org) - att ) ** 2)).mean()
-    loss_att = ((( (x_org*y_mask[:,1,...].unsqueeze(dim=1)) - att ) ** 2)).mean()
     #loss_att =  ((( (x_org*y_mask[:,1,...].unsqueeze(dim=1)).mean(dim=1) - att.mean(dim=1) ) ** 2)).mean()
     #loss_att = (((x_org*y_mask[:,1,...].unsqueeze(dim=1) - att ) ** 2) * ( y_mask[:,0,...].unsqueeze(dim=1) + y_mask[:,1,...].unsqueeze(dim=1)*0.5  )).mean()  
     #loss_att = ( torch.abs(att*y_mask[:,0,...].unsqueeze(dim=1)) ).sum() / y_mask[:,0,...].sum()      
     loss_att = torch.clamp(loss_att, max=30)    
     
-    return 2*loss_att + loss_theta
+    return loss_att + 0.5*loss_theta
 
 
 class WeightedMCEloss(nn.Module):

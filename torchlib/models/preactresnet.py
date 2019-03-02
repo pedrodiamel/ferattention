@@ -6,8 +6,9 @@ from torch.autograd import Variable
 import random
 
 
-__all__ = ['PreActResNet', 'preactresnet18', 'preactresnet34', 'preactresnet50', 'preactresnet101',
-           'preactresnet152', 'preactresembnet18', 'preactresembnetex18', 'preactresembnetex34']
+__all__ = ['PreActResNet', 'PreActResEmbNet', 'PreActResEmbExNet', 'preactresnet18', 'preactresnet34', 
+            'preactresnet50', 'preactresnet101','preactresnet152', 'preactresembnet18', 'preactresembnetex18', 
+            'preactresembnetex34']
 
 class PreActBlock(nn.Module):
     '''Pre-activation version of the BasicBlock.'''
@@ -32,7 +33,6 @@ class PreActBlock(nn.Module):
         out = self.conv2(F.relu(self.bn2(out)))
         out += shortcut
         return out
-
 
 class PreActBottleneck(nn.Module):
     '''Pre-activation version of the original Bottleneck module.'''
@@ -61,14 +61,13 @@ class PreActBottleneck(nn.Module):
         out += shortcut
         return out
 
-
 class PreActResNet(nn.Module):
     def __init__(self, block, num_blocks,  num_classes=1000, num_channels=3, initial_channels=64):
         super(PreActResNet, self).__init__()
         self.in_planes = initial_channels
         self.num_classes = num_classes
         self.num_channels=num_channels
-        self.size_input=32 
+        self.size_input=32
 
         self.conv1 = nn.Conv2d(num_channels, initial_channels, kernel_size=3, stride=1, padding=1, bias=False)
         self.layer1 = self._make_layer(block, initial_channels, num_blocks[0], stride=1)
@@ -94,14 +93,12 @@ class PreActResNet(nn.Module):
         out = self.layer3(out)
         out = self.layer4(out)
         
-        out = F.avg_pool2d(out, out.shape[3] )
+        #out = F.avg_pool2d(out, out.shape[3] )
+        out = F.adaptive_avg_pool2d( out, 1 )
         
         out = out.view(out.size(0), -1)
         out = self.linear(out)
         return out
-
-
-
 
 def preactresnet18( pretrained=False, **kwargs ):    
     model = PreActResNet(PreActBlock, [2,2,2,2], **kwargs)
@@ -141,7 +138,7 @@ def preactresnet152(pretrained=False, **kwargs):
 
 
 class PreActResEmbNet(nn.Module):
-    def __init__(self, block, num_blocks,  dim=1000, num_channels=3, initial_channels=64):
+    def __init__(self, block, num_blocks,  dim=64, num_channels=3, initial_channels=64):
         super(PreActResEmbNet, self).__init__()
         self.in_planes = initial_channels
         self.dim = dim
@@ -172,9 +169,12 @@ class PreActResEmbNet(nn.Module):
         out = self.layer2(out)
         out = self.layer3(out)
         out = self.layer4(out)
-        out = F.avg_pool2d(out, out.shape[3] )              
+        #out = F.avg_pool2d(out, out.shape[3] )   
+        out = F.adaptive_avg_pool2d( out, 1 )
+
         out = out.view(out.size(0), -1)
         out = self.linear(out)
+
         return out
 
 
@@ -186,9 +186,8 @@ def preactresembnet18( pretrained=False, **kwargs ):
     return model
 
 
-
 class PreActResEmbExNet(nn.Module):
-    def __init__(self, block, num_blocks,  dim=1000, num_classes=1000, num_channels=3, initial_channels=64):
+    def __init__(self, block, num_blocks, dim=64, num_classes=1000, num_channels=3, initial_channels=64):
         super(PreActResEmbExNet, self).__init__()
         self.in_planes = initial_channels
         self.dim = dim

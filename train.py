@@ -11,7 +11,7 @@ from torch.utils.data.sampler import SubsetRandomSampler, WeightedRandomSampler
 
 from torchlib.datasets.fersynthetic  import SyntheticFaceDataset, SecuencialSyntheticFaceDataset
 from torchlib.datasets.factory  import FactoryDataset
-from torchlib.attentionnet import AttentionNeuralNet
+from torchlib.attentionnet import AttentionNeuralNet, AttentionSTNNeuralNet, AttentionGMMNeuralNet, AttentionGMMSTNNeuralNet
 
 from pytvision.transforms import transforms as mtrans
 from pytvision import visualization as view
@@ -85,6 +85,9 @@ def arg_parser():
     parser.add_argument('--name-dataset', default='mnist', type=str,
                         help='name dataset')    
 
+    parser.add_argument('--name-method', default='attnet', type=str,
+                        help='name method')  
+
     parser.add_argument('--parallel', action='store_true', default=False,
                     help='Parallel')
     return parser
@@ -103,7 +106,15 @@ def main():
     dim=args.dim
     view_freq=1
 
-    network = AttentionNeuralNet(
+    fname = args.name_method
+    fnet = {
+        'attnet':AttentionNeuralNet, 
+        'attstnnet':AttentionSTNNeuralNet, 
+        'attgmmnet':AttentionGMMNeuralNet, 
+        'attgmmstnnet':AttentionGMMSTNNeuralNet
+        }
+
+    network = fnet[fname](
         patchproject=args.project,
         nameproject=args.name,
         no_cuda=args.no_cuda,

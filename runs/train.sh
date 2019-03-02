@@ -13,7 +13,8 @@ PRINT_FREQ=100
 WORKERS=20
 RESUME='model_best.pth.tar' #chk000010, model_best
 GPU=0
-ARCH='atentionresnet34'
+NAMEMETHOD='attnet' #attnet, attstnnet, attgmmnet, attgmmstnnet
+ARCH='ferattention' #ferattention, ferattentionstn
 LOSS='attgmm'
 OPT='adam'
 SCHEDULER='step'
@@ -57,6 +58,7 @@ $DATA \
 --loss=$LOSS \
 --opt=$OPT \
 --scheduler=$SCHEDULER \
+--name-method=$NAMEMETHOD \
 --arch=$ARCH \
 --parallel \
 --finetuning \

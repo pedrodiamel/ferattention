@@ -13,19 +13,19 @@ PRINT_FREQ=100
 WORKERS=20
 RESUME='model_best.pth.tar' #chk000010, model_best
 GPU=0
-NAMEMETHOD='attnet' #attnet, attstnnet, attgmmnet, attgmmstnnet
-ARCH='ferattention' #ferattention, ferattentionstn
-LOSS='attgmm'
+NAMEMETHOD='attgmmnet' #attnet, attstnnet, attgmmnet, attgmmstnnet
+ARCH='ferattentiongmm' #ferattention, ferattentiongmm, ferattentionstn
+LOSS='attloss'
 OPT='adam'
 SCHEDULER='step'
 NUMCLASS=8 #7, 8
 NUMCHANNELS=3
-DIM=64
+DIM=1000
 SNAPSHOT=10
 IMAGESIZE=128
 KFOLD=0
 NACTOR=10
-EXP_NAME='feratt_'$ARCH'_'$LOSS'_'$OPT'_'$NAMEDATASET'_dim'$DIM'_preactresnet18x32_fold'$KFOLD'_002'
+EXP_NAME='feratt_'$NAMEMETHOD'_'$ARCH'_'$LOSS'_'$OPT'_'$NAMEDATASET'_dim'$DIM'_preactresnet18x32_fold'$KFOLD'_003'
 
 
 rm -rf $PROJECT/$EXP_NAME/$EXP_NAME.log

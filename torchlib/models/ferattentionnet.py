@@ -11,29 +11,43 @@ from . import preactresnet
 from . import stn
 
 
-__all__ = ['FERAttentionNet', 'FERAttentionSTNNet', 'ferattention', 'ferattentionstn' ]
-
+__all__ = ['FERAttentionNet', 'FERAttentionGMMNet', 'FERAttentionSTNNet', 'ferattention', 'ferattentiongmm', 'ferattentionstn' ]
 
 
 def ferattention(pretrained=False, **kwargs):
     """"FERAttention model architecture
     """
-    model = FERAttentionNet(pretrained=pretrained, **kwargs)
+    model = FERAttentionNet(**kwargs)
 
     if pretrained == True:
         #model.load_state_dict(state['model'])
         pass
     return model
+
+def ferattentiongmm(pretrained=False, **kwargs):
+    """"FERAttention gmm model architecture
+    """
+    model = FERAttentionGMMNet(**kwargs)
+
+    if pretrained == True:
+        #model.load_state_dict(state['model'])
+        pass
+    return model
+
 
 def ferattentionstn(pretrained=False, **kwargs):
     """"FERAttentionSTN model architecture
     """
-    model = FERAttentionSTNNet(pretrained=pretrained, **kwargs)
+    model = FERAttentionSTNNet(**kwargs)
 
     if pretrained == True:
         #model.load_state_dict(state['model'])
         pass
     return model
+
+
+
+
 
 def conv3x3(_in, _out):
     return nn.Conv2d(_in, _out, kernel_size=3, stride=1, padding=1)
@@ -45,45 +59,46 @@ class ConvRelu(nn.Module):
         self.activation = nn.ReLU(inplace=True)
     def forward(self, x):
         x = self.conv(x)
-        x = self.activation(x)
+        x = self.activation(x)        
         return x
 
 class ConvRelu2(nn.Module):
     def __init__(self, _in, _out):
         super(ConvRelu2, self).__init__()
-        self.cr1 = ConvRelu(_in, _out)
-        self.cr2 = ConvRelu(_in, _out)
+        self.cr1 = ConvRelu(_in , _out)
+        self.cr2 = ConvRelu(_out, _out)
     def forward(self, x):
         x = self.cr1(x)
-        x = self.cr1(x)
+        x = self.cr2(x)
         return x
 
 class Coder(nn.Module):
     def __init__(self, in_size, out_size ):
         super(Coder, self).__init__()
-        self.conv = ConvRelu2(in_size, out_size )
-        self.down = nn.MaxPool2d(2, 2)
+        self.conv = ConvRelu2( in_size, out_size )
+        self.down = nn.MaxPool2d(2,2)
+        
     def forward(self, x):
-        y1  = self.conv(x)
-        y2  = self.down(y1)
-        return y1, y2
+        y1 = self.conv(x)                        
+        y2 = self.down(y1)
+        return y2, y1
 
 class Decoder(nn.Module):
     def __init__(self, in_size, out_size):
         super(Decoder, self).__init__()
         self.conv = ConvRelu2(in_size, out_size)
-        self.up = nn.functional.interpolate
+        self.up   = F.interpolate
     def forward(self, x1, x2):
         x2 = self.up(x2, scale_factor=2  ,mode='bilinear', align_corners=False)
-        return self.conv( torch.cat([x1, x2], 1))  
+        return self.conv( torch.cat([x1, x2], 1) )
 
 class DecoderBlockV2(nn.Module):
     def __init__(self, in_channels, middle_channels, out_channels ):
         super(DecoderBlockV2, self).__init__()
         self.in_channels = in_channels
-        self.up = nn.functional.interpolate
+        self.up  = F.interpolate
         self.cr1 = ConvRelu(in_channels,     middle_channels)
-        self.cr2 = ConvRelu(middle_channels, out_channels)        
+        self.cr2 = ConvRelu(middle_channels, out_channels)
     def forward(self, x):
         x = self.up(x, scale_factor=2 ,mode='bilinear', align_corners=False)
         x = self.cr2( self.cr1(x) )
@@ -145,19 +160,20 @@ class AttentionNet(nn.Module):
         self.bbrelu = bbrelu    
 
         filters = [64, 128, 256]
+        
         self.down1  = Coder(     in_channels,           filters[0])
         self.down2  = Coder(     filters[0],            filters[1])
-        self.center = ConvRelu2( filters[1],            filters[2])
+        self.center = ConvRelu2( filters[1],            filters[2])        
         self.up2    = Decoder(   filters[2]+filters[1], filters[1])
         self.up1    = Decoder(   filters[1]+filters[0], filters[0])
         self.final  = nn.Conv2d( filters[0],            out_channels, 1)
         self.brelu  = BiReLU()
 
 
-    def forward(self, x):        
-        x,befdown1 = self.down1(x)
+    def forward(self, x):           
+        x,befdown1 = self.down1(x)    
         x,befdown2 = self.down2(x)
-        x = self.center(x)
+        x = self.center(x)        
         x = self.up2(befdown2, x)
         x = self.up1(befdown1, x)
         x = self.final(x)
@@ -167,6 +183,7 @@ class AttentionNet(nn.Module):
             #x = x * ( torch.abs(x) > 0.02 ).float()
 
         return x
+
 
 class AttentionResNet(nn.Module):
     
@@ -237,16 +254,17 @@ class AttentionResNet(nn.Module):
 
         return x
 
+
 class FERAttentionNet(nn.Module):
-    """FERAttentionNet
+    """FERAttentionNet 
     """
     
-    def __init__(self, encoder_depth, dim=32, num_classes=1, num_channels=3, num_filters=32 ):
+    def __init__(self, dim=32, num_classes=1, num_channels=3, num_filters=32 ):
         
         super().__init__()
         self.num_classes = num_classes
         self.num_filters = num_filters
-
+        
         #attention module
         # TODO March 01, 2019: Include select model attention
         self.attention_map = AttentionNet( in_channels=num_channels, out_channels=1  )             
@@ -263,18 +281,19 @@ class FERAttentionNet(nn.Module):
             nn.Conv2d(in_channels=num_filters//4, out_channels=num_channels, kernel_size=1, stride=1, padding=0, bias=True),
             #nn.LeakyReLU(0.2, inplace=True),
         )
-
+        
         #classification and reconstruction
         # TODO March 01, 2019: Select of classification and representation module 
-        self.netclass = preactresnet.preactresembnetex18( num_classes=num_classes, dim=dim, num_channels=num_channels  )
+        self.netclass = preactresnet.preactresnet18( num_classes=num_classes, num_channels=num_channels  )
+    
     
     def make_layer(self, block, num_of_layer, num_ft):
         layers = []
         for _ in range(num_of_layer):
             layers.append(block(num_ft))
         return nn.Sequential(*layers)
-        
-
+    
+    
     def forward(self, x, x_org=None ):
                  
         
@@ -305,7 +324,94 @@ class FERAttentionNet(nn.Module):
         
         
         #classification
-        att_pool = F.avg_pool2d(att_out, 2) # <- 32x32 source                     
+        att_pool = F.avg_pool2d(att_out, 4) # <- 32x32 source                     
+        y = self.netclass( att_pool )
+
+        # #ensamble classification
+        # #x = x * ( torch.abs(att) <= 0.02 ).float()
+        # out = [ att_t,  att  ] #x
+        # y=[]
+        # for o in out:
+        #     att_pool = F.avg_pool2d(o, 2) # <- 32x32 source 
+        #     ys = self.netclass( att_pool )
+        #     y.append(ys)            
+        # y = torch.stack(y, dim=2).mean(dim=2)
+                    
+        return y, att, g_att, g_ft 
+ 
+
+
+class FERAttentionGMMNet(nn.Module):
+    """FERAttentionGMMNet 
+    """
+    
+    def __init__(self, dim=32, num_classes=1, num_channels=3, num_filters=32 ):
+        
+        super().__init__()
+        self.num_classes = num_classes
+        self.num_filters = num_filters
+        
+        #attention module
+        # TODO March 01, 2019: Include select model attention
+        self.attention_map = AttentionNet( in_channels=num_channels, out_channels=1  )             
+        
+        #feature module
+        self.conv_input = nn.Conv2d(in_channels=num_channels, out_channels=num_filters, kernel_size=9, stride=1, padding=4, bias=True)
+        self.feature    = self.make_layer(_Residual_Block_SR, 4, num_filters )
+        self.conv_mid   = nn.Conv2d(in_channels=num_filters, out_channels=num_filters, kernel_size=3, stride=1, padding=1, bias=True)
+        
+        #recostruction
+        self.reconstruction = nn.Sequential(
+            ConvRelu(num_filters, num_filters//2),
+            ConvRelu(num_filters//2, num_filters//4),
+            nn.Conv2d(in_channels=num_filters//4, out_channels=num_channels, kernel_size=1, stride=1, padding=0, bias=True),
+            #nn.LeakyReLU(0.2, inplace=True),
+        )
+        
+        #classification and reconstruction
+        # TODO March 01, 2019: Select of classification and representation module 
+        self.netclass = preactresnet.preactresembnetex18( num_classes=num_classes, dim=dim, num_channels=num_channels  )
+        
+    
+    
+    def make_layer(self, block, num_of_layer, num_ft):
+        layers = []
+        for _ in range(num_of_layer):
+            layers.append(block(num_ft))
+        return nn.Sequential(*layers)
+    
+    
+    def forward(self, x, x_org=None ):
+                 
+        
+        #attention map
+        g_att = self.attention_map( x ) 
+            
+        #feature module
+        out = self.conv_input( x )
+        residual = out
+        out = self.feature( out )
+        out = self.conv_mid(out)
+        g_ft = torch.add(out, residual )
+       
+        #fusion
+        #\sigma(A) * F(I) 
+        attmap = torch.mul( F.sigmoid( g_att ) ,  g_ft )               
+        att = self.reconstruction( attmap )   
+           
+        
+        att_out = att      
+        # if self.training:
+        #     att_out = att          
+        #     if random.random() < 0.50:
+        #         if random.random() < 0.25:
+        #             att_out = x_org
+        #         else: 
+        #             att_out = att
+        
+        
+        #classification
+        att_pool = F.avg_pool2d(att_out, 4) # <- 32x32 source                     
         z, y = self.netclass( att_pool )
   
 
@@ -324,11 +430,15 @@ class FERAttentionNet(nn.Module):
             
         return z, y, att, g_att, g_ft 
  
+
+
+
+
 class FERAttentionSTNNet(nn.Module):
     """FERAttentionSTNNet
     """
     
-    def __init__(self, encoder_depth, dim=32, num_classes=1, num_channels=3, num_filters=32 ):
+    def __init__(self, dim=32, num_classes=1, num_channels=3, num_filters=32 ):
         
         super().__init__()
         self.num_classes = num_classes
@@ -400,7 +510,7 @@ class FERAttentionSTNNet(nn.Module):
         
         
         #classification
-        att_pool = F.avg_pool2d(att_out, 2) # <- 32x32 source                     
+        att_pool = F.avg_pool2d(att_out, 4) # <- 32x32 source                     
         z, y = self.netclass( att_pool )
   
 

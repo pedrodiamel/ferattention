@@ -103,7 +103,7 @@ class AttentionNeuralNetAbstract(NeuralNetAbstract):
         
         self.accuracy = nloss.Accuracy()
         self.topk     = nloss.TopkAccuracy()
-        self.gmm      = nloss.GMMAccuracy( classes=num_classes  )
+        self.gmm      = nloss.GMMAccuracy( classes=num_classes, cuda=self.cuda  )
         self.dice     = nloss.Dice()
        
         # Set the graphic visualization
@@ -344,8 +344,8 @@ class AttentionNeuralNet(AttentionNeuralNetAbstract):
             
             # update
             self.logger_train.update(
-                {'loss': loss.data[0], 'loss_bce': loss_bce.data[0], 'loss_att':loss_att.data[0] },
-                {'topk': topk[0][0] },
+                {'loss': loss.cpu().item(), 'loss_bce': loss_bce.cpu().item(), 'loss_att':loss_att.cpu().item() },
+                {'topk': topk[0][0].cpu() },
                 batch_size,
                 )
             
@@ -369,7 +369,7 @@ class AttentionNeuralNet(AttentionNeuralNetAbstract):
             for i, (x_org, x_img, y_mask, meta) in enumerate(data_loader):
                 
                 # get data (image, label)
-                batch_size = x_img.shape[0]    
+                batch_size = x_img.shape[0]  
                                                
                 y_lab = meta[:,0]
                 y_theta   = meta[:,1:].view(-1, 2, 3)
@@ -397,8 +397,8 @@ class AttentionNeuralNet(AttentionNeuralNetAbstract):
                                 
                 # update
                 self.logger_val.update( 
-                    {'loss': loss.data[0], 'loss_bce': loss_bce.data[0], 'loss_att':loss_att.data[0] },
-                    {'topk': topk[0][0] },    
+                    {'loss': loss.cpu().item(), 'loss_bce': loss_bce.cpu().item(), 'loss_att':loss_att.cpu().item() },
+                    {'topk': topk[0][0].cpu() },    
                     batch_size,          
                     )
 
@@ -552,7 +552,8 @@ class AttentionSTNNeuralNet(AttentionNeuralNet):
 
         self.logger_train = Logger( 'Train', ['loss', 'loss_bce', 'loss_att', 'loss_stn' ], ['topk'], self.plotter  )
         self.logger_val   = Logger( 'Val  ', ['loss', 'loss_bce', 'loss_att', 'loss_stn' ], ['topk'], self.plotter )
-        
+    
+    
     def training(self, data_loader, epoch=0):        
 
         #reset logger
@@ -599,8 +600,8 @@ class AttentionSTNNeuralNet(AttentionNeuralNet):
             
             # update
             self.logger_train.update(
-                {'loss': loss.data[0], 'loss_bce': loss_bce.data[0], 'loss_att':loss_att.data[0], 'loss_stn':loss_stn.data[0] },
-                {'topk': topk[0][0] },
+                {'loss': loss.cpu().item(), 'loss_bce': loss_bce.cpu().item(), 'loss_att':loss_att.cpu().item(), 'loss_stn':loss_stn.cpu().item() },
+                {'topk': topk[0][0].cpu() },
                 batch_size,
                 )
             
@@ -655,8 +656,8 @@ class AttentionSTNNeuralNet(AttentionNeuralNet):
                 
                 # update
                 self.logger_val.update( 
-                    {'loss': loss.data[0], 'loss_bce': loss_bce.data[0], 'loss_att':loss_att.data[0], 'loss_stn':loss_stn.data[0] },
-                    {'topk': topk[0][0] },    
+                    {'loss': loss.cpu().item(), 'loss_bce': loss_bce.cpu().item(), 'loss_att':loss_att.cpu().item(), 'loss_stn':loss_stn.cpu().item() },
+                    {'topk': topk[0][0].cpu() },    
                     batch_size,          
                     )
 
@@ -868,8 +869,8 @@ class AttentionGMMNeuralNet(AttentionNeuralNetAbstract):
             
             # update
             self.logger_train.update(
-                {'loss': loss.data[0], 'loss_gmm': loss_gmm.data[0], 'loss_bce': loss_bce.data[0], 'loss_att':loss_att.data[0] },
-                {'topk': topk[0][0], 'gmm': gmm.data[0] },
+                {'loss': loss.cpu().item(), 'loss_gmm': loss_gmm.cpu().item(), 'loss_bce': loss_bce.cpu().item(), 'loss_att':loss_att.cpu().item() },
+                {'topk': topk[0][0].cpu(), 'gmm': gmm.cpu().item() },
                 batch_size,
                 )
             
@@ -923,8 +924,8 @@ class AttentionGMMNeuralNet(AttentionNeuralNetAbstract):
                                 
                 # update
                 self.logger_val.update( 
-                    {'loss': loss.data[0], 'loss_gmm': loss_gmm.data[0], 'loss_bce': loss_bce.data[0], 'loss_att':loss_att.data[0] },
-                    {'topk': topk[0][0], 'gmm': gmm.data[0] },    
+                    {'loss': loss.cpu().item(), 'loss_gmm': loss_gmm.cpu().item(), 'loss_bce': loss_bce.cpu().item(), 'loss_att':loss_att.cpu().item() },
+                    {'topk': topk[0][0].cpu(), 'gmm': gmm.cpu().item() },    
                     batch_size,          
                     )
 
@@ -953,13 +954,11 @@ class AttentionGMMNeuralNet(AttentionNeuralNetAbstract):
         if epoch % self.view_freq == 0:
 
             att   = att[0,:,:,:].permute( 1,2,0 ).mean(dim=2)
-            att_t = att_t[0,:,:,:].permute( 1,2,0 ).mean(dim=2)
             srf   = srf[0,:,:,:].permute( 1,2,0 ).sum(dim=2)  
             fmap  = fmap[0,:,:,:].permute( 1,2,0 ) 
                                     
             self.visheatmap.show('Image', x_img.data.cpu()[0].numpy()[0,:,:])           
             self.visheatmap.show('Image Attention',att.cpu().numpy().astype(np.float32) )
-            self.visheatmap.show('Image Attention Trans',att_t.cpu().numpy().astype(np.float32) )
             self.visheatmap.show('Feature Map',srf.cpu().numpy().astype(np.float32) )
             self.visheatmap.show('Attention Map',fmap.cpu().numpy().astype(np.float32) )
             
@@ -1138,8 +1137,13 @@ class AttentionGMMSTNNeuralNet(AttentionNeuralNetAbstract):
             
             # update
             self.logger_train.update(
-                {'loss': loss.data[0], 'loss_gmm': loss_gmm.data[0], 'loss_bce': loss_bce.data[0], 'loss_att':loss_att.data[0], 'loss_stn':loss_stn.data[0] },
-                {'topk': topk[0][0], 'gmm': gmm.data[0] },
+                {'loss': loss.cpu().item(), 
+                 'loss_gmm': loss_gmm.cpu().item(), 
+                 'loss_bce': loss_bce.cpu().item(), 
+                 'loss_att':loss_att.cpu().item(), 
+                 'loss_stn':loss_stn.cpu().item() 
+                },
+                {'topk': topk[0][0].cpu(), 'gmm': gmm.cpu().item() },
                 batch_size,
                 )
             
@@ -1196,8 +1200,13 @@ class AttentionGMMSTNNeuralNet(AttentionNeuralNetAbstract):
                                 
                 # update
                 self.logger_val.update( 
-                    {'loss': loss.data[0], 'loss_gmm': loss_gmm.data[0], 'loss_bce': loss_bce.data[0], 'loss_att':loss_att.data[0], 'loss_stn':loss_stn.data[0] },
-                    {'topk': topk[0][0], 'gmm': gmm.data[0] },    
+                    {'loss': loss.cpu().item(), 
+                     'loss_gmm': loss_gmm.cpu().item(), 
+                     'loss_bce': loss_bce.cpu().item(), 
+                     'loss_att':loss_att.cpu().item(), 
+                     'loss_stn':loss_stn.cpu().item() 
+                    },
+                    {'topk': topk[0][0].cpu(), 'gmm': gmm.cpu().item() },    
                     batch_size,          
                     )
 

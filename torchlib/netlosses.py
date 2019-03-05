@@ -14,7 +14,7 @@ class Attloss(nn.Module):
     def forward(self, x_org, y_mask,  att):
         
         loss_att = ((( (x_org*y_mask[:,1,...].unsqueeze(dim=1)) - att ) ** 2)).mean()  
-        loss_att_back = self.bce( torch.abs(att) > 0.02, y_mask[:,1,...].unsqueeze(dim=1) )
+        loss_att_back = self.bce( (torch.abs(att).sum(dim=1).unsqueeze(dim=1) > 0.02).float() , y_mask[:,1,...].unsqueeze(dim=1) )
  
         # loss_att = ((((x_org) - att ) ** 2)).mean()
         # loss_att =  ((( (x_org*y_mask[:,1,...].unsqueeze(dim=1)).mean(dim=1) - att.mean(dim=1) ) ** 2)).mean()
@@ -413,7 +413,7 @@ class GMMAccuracy(nn.Module):
 
         #numclasses = self.classes
         #numclasses = self.classes if not classes else classes        
-        classes  = np.unique(y)
+        classes  = np.unique(y.cpu())
         numclasses = len(classes)
         
         num = x.shape[0]

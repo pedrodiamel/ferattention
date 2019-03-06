@@ -150,7 +150,7 @@ def main():
     # datasets
     # training dataset
     # SyntheticFaceDataset, SecuencialSyntheticFaceDataset
-    train_data = SyntheticFaceDataset(
+    train_data = SecuencialSyntheticFaceDataset(
         data=FactoryDataset.factory(
             pathname=args.data, 
             name=args.name_dataset, 
@@ -160,7 +160,7 @@ def main():
             ),
         pathnameback=args.databack, 
         ext='jpg',
-        #count=70000, #100000
+        count=70000, #100000
         num_channels=num_channels,
         iluminate=True, angle=30, translation=0.2, warp=0.1, factor=0.2,
         #iluminate=True, angle=45, translation=0.3, warp=0.2, factor=0.2,
@@ -169,13 +169,12 @@ def main():
         )
     
     
-    #frec = np.array([ (train_data.labels==c).sum() for c in range( train_data.num_classes )  ]) 
-    labels, counts = np.unique(train_data.labels, return_counts=True)
-    weights = 1/(counts/counts.sum())
-        
-    samples_weights = np.array([ weights[ x ]  for x in train_data.labels ])    
-    #sampler = SubsetRandomSampler(np.random.permutation( num_train ) ) 
-    sampler = WeightedRandomSampler( weights=samples_weights, num_samples=len(samples_weights) , replacement=True )
+#     labels, counts = np.unique(train_data.labels, return_counts=True)
+#     weights = 1/(counts/counts.sum())        
+#     samples_weights = np.array([ weights[ x ]  for x in train_data.labels ])    
+    
+    sampler = SubsetRandomSampler(np.random.permutation( num_train ) ) 
+#     sampler = WeightedRandomSampler( weights=samples_weights, num_samples=len(samples_weights) , replacement=True )
 
     train_loader = DataLoader(train_data, batch_size=args.batch_size,
         num_workers=args.workers, pin_memory=network.cuda, drop_last=True, sampler=sampler ) #shuffle=True,
@@ -183,7 +182,7 @@ def main():
     
     # validate dataset
     # SyntheticFaceDataset, SecuencialSyntheticFaceDataset
-    val_data = SyntheticFaceDataset(
+    val_data = SecuencialSyntheticFaceDataset(
         data=FactoryDataset.factory(
             pathname=args.data, 
             name=args.name_dataset, 
@@ -193,7 +192,7 @@ def main():
             ),
         pathnameback=args.databack, 
         ext='jpg',
-        #count=1000, #10000
+        count=1000, #10000
         num_channels=num_channels,
         iluminate=True, angle=30, translation=0.2, warp=0.1, factor=0.2, 
         #iluminate=True, angle=45, translation=0.3, warp=0.2, factor=0.2,         

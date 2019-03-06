@@ -3,7 +3,7 @@
 # parameters
 DATABACK='~/.datasets/coco'
 DATA='~/.datasets'
-NAMEDATASET='affectnetdark' #bu3dfe, ferblack, 
+NAMEDATASET='ckdark' #affectnetdark, bu3dfedark, ckdark, jaffedark
 PROJECT='../out'
 EPOCHS=500
 BATCHSIZE=128 #128, 240
@@ -25,7 +25,7 @@ SNAPSHOT=10
 IMAGESIZE=128
 KFOLD=0
 NACTOR=10
-EXP_NAME='feratt_'$NAMEMETHOD'_'$ARCH'_'$LOSS'_'$OPT'_'$NAMEDATASET'_dim'$DIM'_preactresnet18x32_fold'$KFOLD'_003'
+EXP_NAME='feratt_'$NAMEMETHOD'_'$ARCH'_'$LOSS'_'$OPT'_'$NAMEDATASET'_dim'$DIM'_preactresnet18x32_fold'$KFOLD'_004'
 
 
 rm -rf $PROJECT/$EXP_NAME/$EXP_NAME.log

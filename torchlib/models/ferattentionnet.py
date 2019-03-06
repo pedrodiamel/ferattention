@@ -267,7 +267,8 @@ class FERAttentionNet(nn.Module):
         
         #attention module
         # TODO March 01, 2019: Include select model attention
-        self.attention_map = AttentionNet( in_channels=num_channels, out_channels=1  )             
+        #self.attention_map = AttentionNet( in_channels=num_channels, out_channels=1  ) 
+        self.attention_map = AttentionResNet( in_channels=num_channels, out_channels=1  )   
         
         #feature module
         self.conv_input = nn.Conv2d(in_channels=num_channels, out_channels=num_filters, kernel_size=9, stride=1, padding=4, bias=True)

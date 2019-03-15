@@ -29,7 +29,10 @@ normalize = mtrans.ToMeanNormalization(
 #    )
 
 
-#normalize = mtrans.ToNormalization()
+normalize = mtrans.ToNormalization()
+# normalize = mtrans.ToMeanNormalization(
+#    mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5],
+#    )
 
 def get_transforms_aug( size_input ):
     return transforms.Compose([        
@@ -40,12 +43,12 @@ def get_transforms_aug( size_input ):
         
         #------------------------------------------------------------------
         #Colors           
-#         mtrans.ToRandomTransform( mtrans.RandomBrightness( factor=0.25 ), prob=0.50 ),
-#         mtrans.ToRandomTransform( mtrans.RandomContrast( factor=0.25 ), prob=0.50 ),
-#         mtrans.ToRandomTransform( mtrans.RandomGamma( factor=0.25 ), prob=0.50 ),
+        mtrans.ToRandomTransform( mtrans.RandomBrightness( factor=0.25 ), prob=0.50 ),
+        mtrans.ToRandomTransform( mtrans.RandomContrast( factor=0.25 ), prob=0.50 ),
+        mtrans.ToRandomTransform( mtrans.RandomGamma( factor=0.25 ), prob=0.50 ),
 #         mtrans.ToRandomTransform( mtrans.RandomRGBPermutation(), prob=0.50 ),
 #         mtrans.ToRandomTransform( mtrans.CLAHE(), prob=0.25 ),
-#         mtrans.ToRandomTransform(mtrans.ToGaussianBlur( sigma=0.05 ), prob=0.25 ),
+        mtrans.ToRandomTransform(mtrans.ToGaussianBlur( sigma=0.01 ), prob=0.25 ),
 #         mtrans.ToRandomTransform(mtrans.ToGaussianNoise( sigma=0.05 ), prob=0.25 ),
         
         
@@ -67,9 +70,9 @@ def get_transforms_aug( size_input ):
 
 def get_transforms_det(size_input):    
     return transforms.Compose([
-        mtrans.ToResize( (size_input, size_input), resize_mode='squash' ) ,
+        mtrans.ToResize( (size_input, size_input), resize_mode='squash', padding_mode=cv2.BORDER_REPLICATE ) ,
         #mtrans.ToResize( (size_input, size_input), resize_mode='square', padding_mode=cv2.BORDER_REPLICATE ) ,
-        mtrans.ToGrayscale(),
+        #mtrans.ToGrayscale(),
         mtrans.ToTensor(),
         normalize,
         ])

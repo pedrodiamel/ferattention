@@ -9,6 +9,12 @@ import random as rn
 from pytvision.transforms import functional as F
 
 
+def hflip( image, mask ):
+    if rn.random() < 0.5:
+        image = image[:,::-1,:]
+        mask  = mask[:,::-1]    
+    return image, mask
+
 def pad( image, h_pad, w_pad, padding=cv2.BORDER_CONSTANT ):
     image = F.pad(image, h_pad, w_pad, padding)
     return image
@@ -64,6 +70,29 @@ def norm(image, mask=None):
     image  =  (image*255.0).astype(np.uint8)   
     return image
         
+
+def filtermask( mask, sz=7 ):
+    se = cv2.getStructuringElement(cv2.MORPH_RECT,(sz,sz))
+    mask = cv2.morphologyEx(mask*1.0, cv2.MORPH_CLOSE, se)
+    mask = cv2.erode(mask*1.0, se, iterations=1)==1          
+    mask = ndi.morphology.binary_fill_holes( mask*1.0 , structure=np.ones((sz,sz)) ) == 1
+    return np.stack( (mask,mask,mask), axis=2 )
+    
+def ligthnorm( image, mask, back ):   
+            
+    face_lab = skcolor.rgb2lab( image )
+    back_lab = skcolor.rgb2lab( back )    
+    face_l = face_lab[:,:,0] 
+    back_l = back_lab[:,:,0]
+    l_f = face_l[mask[:,:,0]==1].mean()
+    l_b = back_l[mask[:,:,0]==1].mean()
+    w_ligth = l_b/(l_f + np.finfo(np.float).eps)            
+    w_ligth = np.clip( w_ligth, 0.5, 1.5 )
+    face_lab[:,:,0] = np.clip( face_lab[:,:,0]*w_ligth , 10, 90 )
+    image_ilu = skcolor.lab2rgb(face_lab)*255 
+    return image_ilu
+    
+    
 class Generator(object):
     
     def __init__(self, iluminate=True, angle=45, translation=0.3, warp=0.1, factor=0.2 ):
@@ -86,34 +115,26 @@ class Generator(object):
         
         #image_o, mask_o = image, mask
         
-        #scale 
+        #tranform
         image, mask = scale( image, mask, factor=factor )
-        image, mask, h = transform( image, mask, angle=angle, translation=translation, warp=warp )        
-        image_ilu = image.copy()
+        image, mask = hflip( image, mask )       
+        image_t, mask_t, h = transform( image, mask, angle=angle, translation=translation, warp=warp )        
+        image_ilu = image_t.copy()
         
         #normalize illumination change
         if iluminate:            
-            face_lab = skcolor.rgb2lab( image )
-            back_lab = skcolor.rgb2lab( back )                      
-            l_f = face_lab[:,:,0].mean()
-            l_b = back_lab[:,:,0].mean()
-            w_ligth = l_b/(l_f + np.finfo(np.float).eps)            
-            w_ligth = np.clip( w_ligth, 0.5, 1.5 )
-            face_lab[:,:,0] = np.clip( face_lab[:,:,0]*w_ligth , 10, 90 )
-            image_ilu = skcolor.lab2rgb(face_lab)*255 
-                       
+            image_ilu = ligthnorm(image_t, mask_t, back)
         
-        se = cv2.getStructuringElement(cv2.MORPH_RECT,(7,7))
-        mask = cv2.morphologyEx(mask*1.0, cv2.MORPH_CLOSE, se)
-        mask = cv2.erode(mask*1.0, se, iterations=1)==1          
-        mask = ndi.morphology.binary_fill_holes( mask*1.0 , structure=np.ones((7,7)) ) == 1
-        mask = np.stack( (mask,mask,mask), axis=2 )
-
+        #filter mask 
+        mask = filtermask(mask)
+        mask_t = filtermask(mask_t)
+        
+        
         image_org = (mask)*image   
         #image_org = back*(1-mask) + (mask)*image   
-        image_ilu = back*(1-mask) + (mask)*image_ilu
+        image_ilu = back*(1-mask_t) + (mask_t)*image_ilu
         
-        return image_org, image_ilu, mask, h
+        return image_org, image_ilu, mask_t, h
     
 
     def generate(self, image, back, pad = 10 ):

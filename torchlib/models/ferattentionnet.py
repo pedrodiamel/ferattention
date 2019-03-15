@@ -153,11 +153,10 @@ class BiReLU(torch.autograd.Function):
 
 class AttentionNet(nn.Module):
     
-    def __init__(self, in_channels=3, out_channels=1, bbrelu=False):
+    def __init__(self, in_channels=3, out_channels=1):
         super(AttentionNet, self).__init__()
         self.in_channels  = in_channels
         self.out_channels = out_channels
-        self.bbrelu = bbrelu    
 
         filters = [64, 128, 256]
         
@@ -167,8 +166,6 @@ class AttentionNet(nn.Module):
         self.up2    = Decoder(   filters[2]+filters[1], filters[1])
         self.up1    = Decoder(   filters[1]+filters[0], filters[0])
         self.final  = nn.Conv2d( filters[0],            out_channels, 1)
-        self.brelu  = BiReLU()
-
 
     def forward(self, x):           
         x,befdown1 = self.down1(x)    
@@ -177,21 +174,15 @@ class AttentionNet(nn.Module):
         x = self.up2(befdown2, x)
         x = self.up1(befdown1, x)
         x = self.final(x)
-
-        if self.bbrelu:
-            x = self.brelu(x)
-            #x = x * ( torch.abs(x) > 0.02 ).float()
-
         return x
 
 
 class AttentionResNet(nn.Module):
     
-    def __init__(self, in_channels=3, out_channels=1, bbrelu=False, num_filters=32, encoder_depth=34, pretrained=True):
-        super(AttentionNet, self).__init__()
+    def __init__(self, in_channels=3, out_channels=1, num_filters=32, encoder_depth=34, pretrained=True):
+        super(AttentionResNet, self).__init__()
         self.in_channels  = in_channels
-        self.out_channels = out_channels
-        self.bbrelu = bbrelu    
+        self.out_channels = out_channels 
         self.num_filters = num_filters
          
         if encoder_depth == 34:
@@ -215,7 +206,7 @@ class AttentionResNet(nn.Module):
         self.conv4 = self.encoder.layer3
         self.conv5 = self.encoder.layer4  
 
-        self.center = DecoderBlockV2(bottom_channel_nr,                        num_filters * 8 * 2, num_filters * 8 )              
+        self.center = DecoderBlockV2(bottom_channel_nr,                        num_filters * 8 * 2, num_filters * 8)
         self.dec5   = DecoderBlockV2(bottom_channel_nr + num_filters * 8,      num_filters * 8 * 2, num_filters * 8)
         self.dec4   = DecoderBlockV2(bottom_channel_nr // 2 + num_filters * 8, num_filters * 8 * 2, num_filters * 8)
         self.dec3   = DecoderBlockV2(bottom_channel_nr // 4 + num_filters * 8, num_filters * 4 * 2, num_filters * 2)
@@ -227,7 +218,6 @@ class AttentionResNet(nn.Module):
             nn.Conv2d(num_filters, 1, kernel_size=1)  
         )  
 
-        self.brelu  = BiReLU()
 
 
     def forward(self, x):        
@@ -238,7 +228,9 @@ class AttentionResNet(nn.Module):
         conv3 = self.conv3(conv2)
         conv4 = self.conv4(conv3)
         conv5 = self.conv5(conv4)
-        center = self.center( conv5 )  
+        
+        pool = self.pool(conv5)
+        center = self.center( pool )  
         dec5 = self.dec5(torch.cat([center, conv5], 1))        
         dec4 = self.dec4(torch.cat([dec5, conv4], 1))
         dec3 = self.dec3(torch.cat([dec4, conv3], 1))
@@ -247,11 +239,6 @@ class AttentionResNet(nn.Module):
         
         #attention map
         x = self.attention_map( dec1 ) 
-
-        if self.bbrelu:
-            x = self.brelu(x)
-            #x = x * ( torch.abs(x) > 0.02 ).float()
-
         return x
 
 
@@ -268,7 +255,7 @@ class FERAttentionNet(nn.Module):
         #attention module
         # TODO March 01, 2019: Include select model attention
         #self.attention_map = AttentionNet( in_channels=num_channels, out_channels=1  ) 
-        self.attention_map = AttentionResNet( in_channels=num_channels, out_channels=1  )   
+        self.attention_map = AttentionResNet( in_channels=num_channels, out_channels=1, pretrained=True  )   
         
         #feature module
         self.conv_input = nn.Conv2d(in_channels=num_channels, out_channels=num_filters, kernel_size=9, stride=1, padding=4, bias=True)
@@ -354,7 +341,8 @@ class FERAttentionGMMNet(nn.Module):
         
         #attention module
         # TODO March 01, 2019: Include select model attention
-        self.attention_map = AttentionNet( in_channels=num_channels, out_channels=1  )             
+        #self.attention_map = AttentionNet( in_channels=num_channels, out_channels=1  )    
+        self.attention_map = AttentionResNet( in_channels=num_channels, out_channels=1, pretrained=True  )  
         
         #feature module
         self.conv_input = nn.Conv2d(in_channels=num_channels, out_channels=num_filters, kernel_size=9, stride=1, padding=4, bias=True)
@@ -363,9 +351,12 @@ class FERAttentionGMMNet(nn.Module):
         
         #recostruction
         self.reconstruction = nn.Sequential(
-            ConvRelu(num_filters, num_filters//2),
-            ConvRelu(num_filters//2, num_filters//4),
-            nn.Conv2d(in_channels=num_filters//4, out_channels=num_channels, kernel_size=1, stride=1, padding=0, bias=True),
+            #ConvRelu(num_filters, num_filters//2),
+            #ConvRelu(num_filters//2, num_filters//4),
+            #nn.Conv2d(in_channels=num_filters//4, out_channels=num_channels, kernel_size=1, stride=1, padding=0, bias=True),
+            
+            ConvRelu(num_filters, num_filters),
+            nn.Conv2d(in_channels=num_filters, out_channels=num_channels, kernel_size=1, stride=1, padding=0, bias=True),
             #nn.LeakyReLU(0.2, inplace=True),
         )
         
@@ -399,16 +390,18 @@ class FERAttentionGMMNet(nn.Module):
         #\sigma(A) * F(I) 
         attmap = torch.mul( F.sigmoid( g_att ) ,  g_ft )               
         att = self.reconstruction( attmap )   
-           
         
+        
+        #att = self.brelu(att)
+        #att = att * ( torch.abs(att) > 0.02 ).float()
+        #att = att * ( att > -0.01 ).float()  - 0.02*( att <= -0.01 ).float() 
+        #att = att * ( att > 0.0 ).float()
+            
         att_out = att      
-        # if self.training:
-        #     att_out = att          
-        #     if random.random() < 0.50:
-        #         if random.random() < 0.25:
-        #             att_out = x_org
-        #         else: 
-        #             att_out = att
+#         if self.training:
+#            att_out = att          
+#            if random.random() < 0.1:
+#                att_out = x_org
         
         
         #classification
@@ -447,7 +440,8 @@ class FERAttentionSTNNet(nn.Module):
 
         #attention module
         # TODO March 01, 2019: Include select model attention
-        self.attention_map = AttentionNet( in_channels=num_channels, out_channels=1  )             
+        #self.attention_map = AttentionNet( in_channels=num_channels, out_channels=1  )          
+        self.attention_map = AttentionResNet( in_channels=num_channels, out_channels=1, pretrained=True  )  
         
         #feature module
         self.conv_input = nn.Conv2d(in_channels=num_channels, out_channels=num_filters, kernel_size=9, stride=1, padding=4, bias=True)

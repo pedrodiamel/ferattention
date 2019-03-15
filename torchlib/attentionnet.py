@@ -83,7 +83,7 @@ class AttentionNeuralNetAbstract(NeuralNetAbstract):
         """
         
         cfg_opt={ 'momentum':momentum, 'weight_decay':weight_decay } 
-        cfg_scheduler={ 'step_size':100, 'gamma':0.1  }        
+        cfg_scheduler={ 'step_size':500, 'gamma':0.1  }        
         self.num_classes = num_classes
         
         super(AttentionNeuralNetAbstract, self).create( 
@@ -864,7 +864,7 @@ class AttentionGMMNeuralNet(AttentionNeuralNetAbstract):
             
             # optimizer
             self.optimizer.zero_grad()
-            (loss*batch_size).backward()
+            (loss).backward() #batch_size
             self.optimizer.step()
             
             # update
@@ -1010,7 +1010,7 @@ class AttentionGMMNeuralNet(AttentionNeuralNetAbstract):
         if loss == 'attloss':            
             self.criterion_bce = nn.CrossEntropyLoss().cuda()
             self.criterion_att = nloss.Attloss()
-            self.criterion_gmm = nloss.DGMMLoss( self.num_classes, cuda=self.cuda )
+            self.criterion_gmm = nloss.DGMMLoss( self.num_classes, cuda=self.cuda )            
         else:
             assert(False)
 

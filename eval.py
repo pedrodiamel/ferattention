@@ -250,9 +250,9 @@ def main():
             Yto = data_emb_val['Y'] 
             
 
-            clf = KNeighborsClassifier(n_neighbors=3)
+            #clf = KNeighborsClassifier(n_neighbors=3)
             #clf = GaussianNB()
-            #clf = RandomForestClassifier(n_estimators=150, oob_score=True, random_state=123456)
+            clf = RandomForestClassifier(n_estimators=150, oob_score=True, random_state=123456)
             #clf = MLPClassifier(hidden_layer_sizes=(100,100), max_iter=100, alpha=1e-4,
             #                     solver='sgd', verbose=10, tol=1e-4, random_state=1,
             #                     learning_rate_init=.01)

@@ -160,9 +160,9 @@ def main():
             ),
         pathnameback=args.databack, 
         ext='jpg',
-        count=70000, #100000
+        count=50000, #100000
         num_channels=num_channels,
-        iluminate=True, angle=30, translation=0.2, warp=0.1, factor=0.2,
+        iluminate=True, angle=45, translation=0.2, warp=0.2, factor=0.2,
         #iluminate=True, angle=45, translation=0.3, warp=0.2, factor=0.2,
         transform_data=get_transforms_aug( imsize ),
         transform_image=get_transforms_det( imsize ),
@@ -173,6 +173,7 @@ def main():
 #     weights = 1/(counts/counts.sum())        
 #     samples_weights = np.array([ weights[ x ]  for x in train_data.labels ])    
     
+    num_train = len(train_data)
     sampler = SubsetRandomSampler(np.random.permutation( num_train ) ) 
 #     sampler = WeightedRandomSampler( weights=samples_weights, num_samples=len(samples_weights) , replacement=True )
 
@@ -192,9 +193,9 @@ def main():
             ),
         pathnameback=args.databack, 
         ext='jpg',
-        count=1000, #10000
+        #count=1000, #10000
         num_channels=num_channels,
-        iluminate=True, angle=30, translation=0.2, warp=0.1, factor=0.2, 
+        iluminate=True, angle=45, translation=0.2, warp=0.2, factor=0.2, 
         #iluminate=True, angle=45, translation=0.3, warp=0.2, factor=0.2,         
         transform_data=get_transforms_aug( imsize ),
         transform_image=get_transforms_det( imsize ),

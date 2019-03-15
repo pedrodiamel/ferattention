@@ -13,16 +13,32 @@ class Attloss(nn.Module):
 
     def forward(self, x_org, y_mask,  att):
         
-        loss_att = ((( (x_org*y_mask[:,1,...].unsqueeze(dim=1)) - att ) ** 2)).mean()  
-        loss_att_back = self.bce( (torch.abs(att).sum(dim=1).unsqueeze(dim=1) > 0.02).float() , y_mask[:,1,...].unsqueeze(dim=1) )
+        
+#         loss_att = ((( (x_org*y_mask[:,1,...].unsqueeze(dim=1)) - att ) ** 2)).mean() 
+        loss_att = ((( x_org - att ) ** 2)).mean() 
+        
+#         loss_att      = (((x_org - att) ** 2)).mean()  
+#         loss_att_face = ((( (x_org*y_mask[:,1,...].unsqueeze(dim=1)) - (att*y_mask[:,1,...].unsqueeze(dim=1)) ) ** 2)).mean()  
+#         loss_att_back = ((( (x_org*y_mask[:,0,...].unsqueeze(dim=1)) - (att*y_mask[:,0,...].unsqueeze(dim=1)) ) ** 2)).mean() 
+        
+        #loss_att_back = self.bce( (torch.abs(att).sum(dim=1).unsqueeze(dim=1) > -0.02).float() , y_mask[:,1,...].unsqueeze(dim=1) )
+        #loss_att_back = (torch.abs(att).sum(dim=1) * y_mask[:,0,...]).sum().float() / (3*y_mask[:,0,...].sum())
+                
+#         d = torch.exp( 6.0*torch.abs( x_org - att ) )
+#         loss_att = (d-1)/(d+1)
+#         loss_att = loss_att.mean()
  
         # loss_att = ((((x_org) - att ) ** 2)).mean()
         # loss_att =  ((( (x_org*y_mask[:,1,...].unsqueeze(dim=1)).mean(dim=1) - att.mean(dim=1) ) ** 2)).mean()
         # loss_att = (((x_org*y_mask[:,1,...].unsqueeze(dim=1) - att ) ** 2) * ( y_mask[:,0,...].unsqueeze(dim=1) + y_mask[:,1,...].unsqueeze(dim=1)*0.5  )).mean()  
         # loss_att = ( torch.abs(att*y_mask[:,0,...].unsqueeze(dim=1)) ).sum() / y_mask[:,0,...].sum()             
         
-        loss_att = torch.clamp(loss_att, max=30)          
-        return loss_att + loss_att_back
+        loss_att = torch.clamp(loss_att, max=30)    
+        #loss_att_face = torch.clamp(loss_att_face, max=30)
+        #loss_att_back = torch.clamp(loss_att_back, max=30)
+        
+        #return loss_att + loss_att_face + 2*loss_att_back
+        return 2*loss_att
 
 
 class STNloss(nn.Module):
@@ -354,7 +370,7 @@ class DGMMLoss(nn.Module):
         classes = self.classes if not classes else classes
         num = x.shape[0]
         dim = x.shape[1]       
-        
+               
         
         ## initialization        
         pi = to_gpu(torch.zeros( (num, classes ) ), self.cuda ) 

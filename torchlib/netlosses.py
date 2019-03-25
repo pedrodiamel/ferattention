@@ -12,32 +12,9 @@ class Attloss(nn.Module):
         self.bce = nn.BCEWithLogitsLoss()
 
     def forward(self, x_org, y_mask,  att):
-        
-        
-#         loss_att = ((( (x_org*y_mask[:,1,...].unsqueeze(dim=1)) - att ) ** 2)).mean() 
-#         loss_att = ((( x_org - att ) ** 2)).mean() 
-        
-#         loss_att      = (((x_org - att) ** 2)).mean()  
-#         loss_att_face = ((( (x_org*y_mask[:,1,...].unsqueeze(dim=1)) - (att*y_mask[:,1,...].unsqueeze(dim=1)) ) ** 2)).mean()  
-#         loss_att_back = ((( (x_org*y_mask[:,0,...].unsqueeze(dim=1)) - (att*y_mask[:,0,...].unsqueeze(dim=1)) ) ** 2)).mean() 
-        
-        #loss_att_back = self.bce( (torch.abs(att).sum(dim=1).unsqueeze(dim=1) > -0.02).float() , y_mask[:,1,...].unsqueeze(dim=1) )
-        #loss_att_back = (torch.abs(att).sum(dim=1) * y_mask[:,0,...]).sum().float() / (3*y_mask[:,0,...].sum())
-                
-        d = torch.exp( 6.0*torch.abs( x_org - att ) )
-        loss_att = (d-1)/(d+1)
-        loss_att = loss_att.mean()
- 
-        # loss_att = ((((x_org) - att ) ** 2)).mean()
-        # loss_att =  ((( (x_org*y_mask[:,1,...].unsqueeze(dim=1)).mean(dim=1) - att.mean(dim=1) ) ** 2)).mean()
-        # loss_att = (((x_org*y_mask[:,1,...].unsqueeze(dim=1) - att ) ** 2) * ( y_mask[:,0,...].unsqueeze(dim=1) + y_mask[:,1,...].unsqueeze(dim=1)*0.5  )).mean()  
-        # loss_att = ( torch.abs(att*y_mask[:,0,...].unsqueeze(dim=1)) ).sum() / y_mask[:,0,...].sum()             
-        
+        loss_att = ((( (x_org*y_mask[:,1,...].unsqueeze(dim=1)) - att ) ** 2)).mean() 
+        loss_att = ((( x_org - att ) ** 2)).mean()         
         loss_att = torch.clamp(loss_att, max=30)    
-        #loss_att_face = torch.clamp(loss_att_face, max=30)
-        #loss_att_back = torch.clamp(loss_att_back, max=30)
-        
-        #return loss_att + loss_att_face + 2*loss_att_back
         return 10*loss_att
 
 
@@ -47,13 +24,10 @@ class STNloss(nn.Module):
         super(STNloss, self).__init__()
         
     def forward(self, x_org, y_theta, theta ):
-        
         grid_org = F.affine_grid(y_theta, x_org.size())
         grid_est = F.affine_grid(theta, x_org.size())    
         x_org_t = F.grid_sample(x_org, grid_org)
         x_org_te = F.grid_sample(x_org, grid_est)    
-        # #loss_theta = ((y_theta - theta) ** 2).mean()    
-        # #loss_theta = F.mse_loss( theta.view(-1, 3*2 ) , y_theta.view(-1, 3*2 ) )
         loss_theta = ((x_org_t - x_org_te) ** 2).mean()
         return 10*loss_theta
 
@@ -230,7 +204,6 @@ class MCEDiceLoss(nn.Module):
         #loss_th   = self.loss_dice( y_pred[:,2,...].unsqueeze(1), y_true[:,2,...].unsqueeze(1) )
         #loss = loss_all + loss_fg + loss_th           
         loss = loss_all + 2.0*loss_fg  
-
         return loss
 
 

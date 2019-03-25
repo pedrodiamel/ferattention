@@ -155,18 +155,18 @@ class FERClassicDataset( dataProvide ):
         self.indexs = np.where(index == train)[0]        
         self.transform = transform
         
-        ######
-        index_nne = []
-        for idx in self.indexs:
-            if( self.labels[ idx ] != 0 ):
-                index_nne.append( idx )
-        self.indexs = np.array(index_nne)
-        #######
+        # ######
+        # index_nne = []
+        # for idx in self.indexs:
+        #     if( self.labels[ idx ] != 0 ):
+        #         index_nne.append( idx )
+        # self.indexs = np.array(index_nne)
+        # #######
         
         self.labels_org = self.labels
         self.labels = self.labels[ self.indexs ]
         self.classes = [self.classes[ i ] for i in  np.unique( self.labels ) ] 
-        self.labels = self.labels - 1 ############ 
+        self.labels = self.labels ### - 1 ############ 
         self.numclass = len(self.classes)   
         self.index = 0
               
@@ -180,7 +180,7 @@ class FERClassicDataset( dataProvide ):
         i = self.indexs[i]
         self.index = i        
         image = np.array( self.data[i].reshape(self.imsize).transpose(1,0), dtype=np.uint8 )
-        label = self.labels_org[ i ]  -1  ##########            
+        label = self.labels_org[ i ]  ### -1  ##########            
         return image, label
 
     def iden(self, i):
@@ -234,7 +234,7 @@ class FERDarkClassicDataset( FERClassicDataset ):
         i = self.indexs[i]
         self.index = i        
         image = np.array( self.data[i].reshape(self.imsize).transpose(1,0), dtype=np.uint8 )
-        label = self.labels_org[i] -1  ##########  
+        label = self.labels_org[i] ####  -1  ##########  
         plm = np.array( self.getladmarks() ).reshape( -1, 2 )
         
         image_rot, plm_rot = adjust( image, plm )

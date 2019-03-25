@@ -5,8 +5,8 @@ DATABACK='~/.datasets/coco'
 DATA='~/.datasets'
 NAMEDATASET='affectnetdark' #affectnetdark, bu3dfedark, ckdark, jaffedark
 PROJECT='../out'
-EPOCHS=500
-BATCHSIZE=160 #128, 160, 200, 240
+EPOCHS=1000
+BATCHSIZE=64 #128, 160, 200, 240
 LEARNING_RATE=0.0001
 MOMENTUM=0.5
 PRINT_FREQ=100
@@ -23,9 +23,9 @@ NUMCHANNELS=3
 DIM=64
 SNAPSHOT=10
 IMAGESIZE=128
-KFOLD=4
+KFOLD=0
 NACTOR=10
-EXP_NAME='ferattpaperstn_'$NAMEMETHOD'_'$ARCH'_'$LOSS'_'$OPT'_'$NAMEDATASET'_dim'$DIM'_preactresnet18x32_fold'$KFOLD'_000'
+EXP_NAME='ferattpaperstn_'$NAMEMETHOD'_'$ARCH'_'$LOSS'_'$OPT'_'$NAMEDATASET'_dim'$DIM'_preactresnet18x32_fold'$KFOLD'_004'
 
 
 rm -rf $PROJECT/$EXP_NAME/$EXP_NAME.log

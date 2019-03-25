@@ -15,7 +15,7 @@ class Attloss(nn.Module):
         
         
 #         loss_att = ((( (x_org*y_mask[:,1,...].unsqueeze(dim=1)) - att ) ** 2)).mean() 
-        loss_att = ((( x_org - att ) ** 2)).mean() 
+#         loss_att = ((( x_org - att ) ** 2)).mean() 
         
 #         loss_att      = (((x_org - att) ** 2)).mean()  
 #         loss_att_face = ((( (x_org*y_mask[:,1,...].unsqueeze(dim=1)) - (att*y_mask[:,1,...].unsqueeze(dim=1)) ) ** 2)).mean()  
@@ -24,9 +24,9 @@ class Attloss(nn.Module):
         #loss_att_back = self.bce( (torch.abs(att).sum(dim=1).unsqueeze(dim=1) > -0.02).float() , y_mask[:,1,...].unsqueeze(dim=1) )
         #loss_att_back = (torch.abs(att).sum(dim=1) * y_mask[:,0,...]).sum().float() / (3*y_mask[:,0,...].sum())
                 
-#         d = torch.exp( 6.0*torch.abs( x_org - att ) )
-#         loss_att = (d-1)/(d+1)
-#         loss_att = loss_att.mean()
+        d = torch.exp( 6.0*torch.abs( x_org - att ) )
+        loss_att = (d-1)/(d+1)
+        loss_att = loss_att.mean()
  
         # loss_att = ((((x_org) - att ) ** 2)).mean()
         # loss_att =  ((( (x_org*y_mask[:,1,...].unsqueeze(dim=1)).mean(dim=1) - att.mean(dim=1) ) ** 2)).mean()
@@ -38,7 +38,7 @@ class Attloss(nn.Module):
         #loss_att_back = torch.clamp(loss_att_back, max=30)
         
         #return loss_att + loss_att_face + 2*loss_att_back
-        return 2*loss_att
+        return 10*loss_att
 
 
 class STNloss(nn.Module):
@@ -55,7 +55,7 @@ class STNloss(nn.Module):
         # #loss_theta = ((y_theta - theta) ** 2).mean()    
         # #loss_theta = F.mse_loss( theta.view(-1, 3*2 ) , y_theta.view(-1, 3*2 ) )
         loss_theta = ((x_org_t - x_org_te) ** 2).mean()
-        return loss_theta
+        return 10*loss_theta
 
 
 

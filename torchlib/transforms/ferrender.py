@@ -130,8 +130,8 @@ class Generator(object):
         mask_t = filtermask(mask_t)
         
         
-        image_org = (mask)*image   
-        #image_org = back*(1-mask) + (mask)*image   
+        image_org = (mask_t)*image_t   
+        #image_org = back*(1-mask_t) + (mask_t)*image_t   
         image_ilu = back*(1-mask_t) + (mask_t)*image_ilu
         
         return image_org, image_ilu, mask_t, h

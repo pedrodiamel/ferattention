@@ -1188,7 +1188,7 @@ class AttentionGMMSTNNeuralNet(AttentionNeuralNetAbstract):
                 # measure accuracy and record loss       
                 loss_bce  = self.criterion_bce(  y_lab_hat, y_lab.long() )
                 loss_gmm  = self.criterion_gmm(  z, y_lab )
-                loss_att  = nloss.attLoss( x_org, y_mask, att, y_theta, theta )
+                loss_att  = self.criterion_att( x_org, y_mask, att )
                 loss_stn  = self.criterion_stn( x_org, y_theta, theta ) 
                 loss      = loss_bce + loss_gmm + loss_att + loss_stn          
                 topk      = self.topk( y_lab_hat, y_lab.long() )               

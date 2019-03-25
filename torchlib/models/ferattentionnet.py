@@ -395,13 +395,13 @@ class FERAttentionGMMNet(nn.Module):
         #att = self.brelu(att)
         #att = att * ( torch.abs(att) > 0.02 ).float()
         #att = att * ( att > -0.01 ).float()  - 0.02*( att <= -0.01 ).float() 
-        #att = att * ( att > 0.0 ).float()
+        #att = att * ( att > 0.01 ).float()
             
         att_out = att      
-#         if self.training:
-#            att_out = att          
-#            if random.random() < 0.1:
-#                att_out = x_org
+        if self.training:
+           att_out = att          
+           if random.random() < 0.2:
+               att_out = x_org
         
         
         #classification
@@ -450,9 +450,12 @@ class FERAttentionSTNNet(nn.Module):
         
         #recostruction
         self.reconstruction = nn.Sequential(
-            ConvRelu(num_filters, num_filters//2),
-            ConvRelu(num_filters//2, num_filters//4),
-            nn.Conv2d(in_channels=num_filters//4, out_channels=num_channels, kernel_size=1, stride=1, padding=0, bias=True),
+#             ConvRelu(num_filters, num_filters//2),
+#             ConvRelu(num_filters//2, num_filters//4),
+#             nn.Conv2d(in_channels=num_filters//4, out_channels=num_channels, kernel_size=1, stride=1, padding=0, bias=True),
+            
+            ConvRelu(num_filters, num_filters),
+            nn.Conv2d(in_channels=num_filters, out_channels=num_channels, kernel_size=1, stride=1, padding=0, bias=True),
             #nn.LeakyReLU(0.2, inplace=True),
         )
         
@@ -484,7 +487,7 @@ class FERAttentionSTNNet(nn.Module):
        
         #fusion
         #\sigma(A) * F(I) 
-        attmap = torch.mul( F.sigmoid( g_att ) ,  g_ft )               
+        attmap = torch.mul( F.sigmoid( g_att ),  g_ft )               
         att = self.reconstruction( attmap )   
     
         
@@ -494,18 +497,19 @@ class FERAttentionSTNNet(nn.Module):
         att_t = F.grid_sample(att, grid)   
         
         
-        att_out = att_t        
-        # if self.training:
-        #     att_out = att_t            
-        #     if random.random() < 0.50:
-        #         if random.random() < 0.25:
-        #             att_out = x_org
-        #         else: 
-        #             att_out = att
+        att_out = att_t
+#         if self.training:
+#             att_out = att_t
+#             if random.random() < 0.20:
+#                 if random.random() < 0.25:
+#                     att_out = x_org
+#                 else: 
+#                     att_out = att
         
         
         #classification
-        att_pool = F.avg_pool2d(att_out, 4) # <- 32x32 source                     
+        att_pool = F.avg_pool2d(att_out, 4) # <- 32x32 source     
+        #att_pool = att_out
         z, y = self.netclass( att_pool )
   
 

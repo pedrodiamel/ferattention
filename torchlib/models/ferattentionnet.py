@@ -215,7 +215,7 @@ class AttentionResNet(nn.Module):
         
         self.attention_map = nn.Sequential(
             ConvRelu(num_filters, num_filters),
-            nn.Conv2d(num_filters, 1, kernel_size=1)  
+            nn.Conv2d(num_filters, out_channels, kernel_size=1)  
         )  
 
 
@@ -255,18 +255,35 @@ class FERAttentionNet(nn.Module):
         #attention module
         # TODO March 01, 2019: Include select model attention
         #self.attention_map = AttentionNet( in_channels=num_channels, out_channels=1  ) 
-        self.attention_map = AttentionResNet( in_channels=num_channels, out_channels=1, pretrained=True  )   
+        #self.attention_map = AttentionResNet( in_channels=num_channels, out_channels=1, pretrained=True  )   
+        
+        self.attention_map = AttentionResNet( in_channels=num_channels, out_channels=num_classes, pretrained=True  )
+        
         
         #feature module
-        self.conv_input = nn.Conv2d(in_channels=num_channels, out_channels=num_filters, kernel_size=9, stride=1, padding=4, bias=True)
-        self.feature    = self.make_layer(_Residual_Block_SR, 4, num_filters )
-        self.conv_mid   = nn.Conv2d(in_channels=num_filters, out_channels=num_filters, kernel_size=3, stride=1, padding=1, bias=True)
+        #self.conv_input = nn.Conv2d(in_channels=num_channels, out_channels=num_filters, kernel_size=9, stride=1, padding=4, bias=True)
+        #self.feature    = self.make_layer(_Residual_Block_SR, 4, num_filters )
+        #self.conv_mid   = nn.Conv2d(in_channels=num_filters, out_channels=num_filters, kernel_size=3, stride=1, padding=1, bias=True)
+        
+        
+        self.conv_input = nn.Conv2d(in_channels=num_channels, out_channels=num_classes, kernel_size=9, stride=1, padding=4, bias=True)
+        self.feature    = self.make_layer(_Residual_Block_SR, 8, num_classes )
+        self.conv_mid   = nn.Conv2d(in_channels=num_classes, out_channels=num_classes, kernel_size=3, stride=1, padding=1, bias=True)
+        
+        
         
         #recostruction
         self.reconstruction = nn.Sequential(
-            ConvRelu(num_filters, num_filters//2),
-            ConvRelu(num_filters//2, num_filters//4),
-            nn.Conv2d(in_channels=num_filters//4, out_channels=num_channels, kernel_size=1, stride=1, padding=0, bias=True),
+#             ConvRelu(num_filters, num_filters//2),
+#             ConvRelu(num_filters//2, num_filters//4),
+#             nn.Conv2d(in_channels=num_filters//4, out_channels=num_channels, kernel_size=1, stride=1, padding=0, bias=True),
+            
+            
+            #ConvRelu(num_filters, num_filters),
+            #nn.Conv2d(in_channels=num_filters, out_channels=num_channels, kernel_size=1, stride=1, padding=0, bias=True),
+            
+            ConvRelu( 2*num_classes+num_channels, num_filters),
+            nn.Conv2d(in_channels=num_filters, out_channels=num_channels, kernel_size=1, stride=1, padding=0, bias=True),
             #nn.LeakyReLU(0.2, inplace=True),
         )
         
@@ -297,10 +314,10 @@ class FERAttentionNet(nn.Module):
        
         #fusion
         #\sigma(A) * F(I) 
-        attmap = torch.mul( F.sigmoid( g_att ) ,  g_ft )               
-        att = self.reconstruction( attmap )   
-           
+        attmap = torch.mul( F.sigmoid( g_att ) ,  g_ft )   
+        att = self.reconstruction( torch.cat( (attmap, x, g_att) , dim=1 ) )   
         
+
         att_out = att      
         # if self.training:
         #     att_out = att          
@@ -315,15 +332,16 @@ class FERAttentionNet(nn.Module):
         att_pool = F.avg_pool2d(att_out, 4) # <- 32x32 source                     
         y = self.netclass( att_pool )
 
-        # #ensamble classification
-        # #x = x * ( torch.abs(att) <= 0.02 ).float()
-        # out = [ att_t,  att  ] #x
-        # y=[]
-        # for o in out:
-        #     att_pool = F.avg_pool2d(o, 2) # <- 32x32 source 
-        #     ys = self.netclass( att_pool )
-        #     y.append(ys)            
-        # y = torch.stack(y, dim=2).mean(dim=2)
+#         #ensamble classification
+#         #x = x * ( torch.abs(att) <= 0.02 ).float()
+#         out = [ att,  x  ] #x, att_t,  att
+#         y=[]
+#         for o in out:
+#             att_pool = F.avg_pool2d(o, 4) # <- 32x32 source 
+#             ys = self.netclass( att_pool )
+#             y.append(ys)            
+#         y = torch.stack(y, dim=2).mean(dim=2)
+
                     
         return y, att, g_att, g_ft 
  
@@ -449,14 +467,9 @@ class FERAttentionSTNNet(nn.Module):
         self.conv_mid   = nn.Conv2d(in_channels=num_filters, out_channels=num_filters, kernel_size=3, stride=1, padding=1, bias=True)
         
         #recostruction
-        self.reconstruction = nn.Sequential(
-#             ConvRelu(num_filters, num_filters//2),
-#             ConvRelu(num_filters//2, num_filters//4),
-#             nn.Conv2d(in_channels=num_filters//4, out_channels=num_channels, kernel_size=1, stride=1, padding=0, bias=True),
-            
+        self.reconstruction = nn.Sequential(            
             ConvRelu(num_filters, num_filters),
             nn.Conv2d(in_channels=num_filters, out_channels=num_channels, kernel_size=1, stride=1, padding=0, bias=True),
-            #nn.LeakyReLU(0.2, inplace=True),
         )
         
         #stn

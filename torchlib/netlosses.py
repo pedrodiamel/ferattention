@@ -26,8 +26,10 @@ class Attloss(nn.Module):
                 
         d = torch.exp( 6.0*torch.abs( x_org - att ) )
         loss_att = (d-1)/(d+1)
-        loss_att = loss_att.mean()
- 
+        loss_att = ( loss_att ).mean()
+
+#         loss_att = ( torch.abs(att*y_mask[:,0,...].unsqueeze(dim=1)) ).mean()
+
         # loss_att = ((((x_org) - att ) ** 2)).mean()
         # loss_att =  ((( (x_org*y_mask[:,1,...].unsqueeze(dim=1)).mean(dim=1) - att.mean(dim=1) ) ** 2)).mean()
         # loss_att = (((x_org*y_mask[:,1,...].unsqueeze(dim=1) - att ) ** 2) * ( y_mask[:,0,...].unsqueeze(dim=1) + y_mask[:,1,...].unsqueeze(dim=1)*0.5  )).mean()  
@@ -38,7 +40,7 @@ class Attloss(nn.Module):
         #loss_att_back = torch.clamp(loss_att_back, max=30)
         
         #return loss_att + loss_att_face + 2*loss_att_back
-        return 10*loss_att
+        return 10.0*loss_att
 
 
 class STNloss(nn.Module):

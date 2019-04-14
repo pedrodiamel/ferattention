@@ -3,18 +3,18 @@
 # parameters
 DATABACK='~/.datasets/coco'
 DATA='~/.datasets'
-NAMEDATASET='affectnetdark' #affectnetdark, bu3dfedark, ckdark, jaffedark
+NAMEDATASET='ckdark' #affectnetdark, bu3dfedark, ckdark, jaffedark
 PROJECT='../out'
 EPOCHS=1000
-BATCHSIZE=64 #128, 160, 200, 240
+BATCHSIZE=64 #64, 128, 160, 200, 240
 LEARNING_RATE=0.0001
 MOMENTUM=0.5
 PRINT_FREQ=100
-WORKERS=20
+WORKERS=30
 RESUME='model_best.pth.tar' #chk000010, model_best
 GPU=0
-NAMEMETHOD='attgmmnet' #attnet, attstnnet, attgmmnet, attgmmstnnet
-ARCH='ferattentiongmm' #ferattention, ferattentiongmm, ferattentionstn
+NAMEMETHOD='attnet' #attnet, attstnnet, attgmmnet, attgmmstnnet
+ARCH='ferattention' #ferattention, ferattentiongmm, ferattentionstn
 LOSS='attloss'
 OPT='adam'
 SCHEDULER='step'
@@ -25,7 +25,7 @@ SNAPSHOT=10
 IMAGESIZE=128
 KFOLD=0
 NACTOR=10
-EXP_NAME='ferattpaperstn_'$NAMEMETHOD'_'$ARCH'_'$LOSS'_'$OPT'_'$NAMEDATASET'_dim'$DIM'_preactresnet18x32_fold'$KFOLD'_004'
+EXP_NAME='att_'$NAMEMETHOD'_'$ARCH'_'$LOSS'_'$OPT'_'$NAMEDATASET'_dim'$DIM'_preactresnet18x32_fold'$KFOLD'Gt_009'
 
 
 rm -rf $PROJECT/$EXP_NAME/$EXP_NAME.log

@@ -83,7 +83,7 @@ class AttentionNeuralNetAbstract(NeuralNetAbstract):
         """
         
         cfg_opt={ 'momentum':momentum, 'weight_decay':weight_decay } 
-        cfg_scheduler={ 'step_size':500, 'gamma':0.1  }        
+        cfg_scheduler={ 'step_size':100, 'gamma':0.1  }        
         self.num_classes = num_classes
         
         super(AttentionNeuralNetAbstract, self).create( 
@@ -329,11 +329,11 @@ class AttentionNeuralNet(AttentionNeuralNetAbstract):
                 y_theta = y_theta.cuda()
             
             # fit (forward)            
-            y_lab_hat, att, _, _ = self.net( x_img, x_img*y_mask[:,1,...].unsqueeze(dim=1) )                
+            y_lab_hat, att, _, _ = self.net( x_img, x_org )                
             
             # measure accuracy and record loss           
             loss_bce  = self.criterion_bce( y_lab_hat, y_lab.long() )           
-            loss_att  = self.criterion_att( x_org, y_mask, att )            
+            loss_att  = self.criterion_att( x_org, y_mask, att )    
             loss      = loss_bce + loss_att           
             topk      = self.topk( y_lab_hat, y_lab.long() )
             
@@ -383,7 +383,7 @@ class AttentionNeuralNet(AttentionNeuralNetAbstract):
                               
 
                 # fit (forward)            
-                y_lab_hat, att, fmap, srf  = self.net( x_img ) 
+                y_lab_hat, att, fmap, srf  = self.net( x_img, x_org ) 
                                 
                 # measure accuracy and record loss       
                 loss_bce  = self.criterion_bce(  y_lab_hat, y_lab.long() )
@@ -428,7 +428,7 @@ class AttentionNeuralNet(AttentionNeuralNetAbstract):
 
             att   = att[0,:,:,:].permute( 1,2,0 ).mean(dim=2)
             srf   = srf[0,:,:,:].permute( 1,2,0 ).sum(dim=2)  
-            fmap  = fmap[0,:,:,:].permute( 1,2,0 ) 
+            fmap  = fmap[0,:,:,:].permute( 1,2,0 ).mean(dim=2) 
                                     
             self.visheatmap.show('Image', x_img.data.cpu()[0].numpy()[0,:,:])           
             self.visheatmap.show('Image Attention',att.cpu().numpy().astype(np.float32) )

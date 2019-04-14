@@ -14,18 +14,22 @@ Introduction
 
 Pytorch implementation for FERAtt neural net. Facial Expression Recognition with Attention Net (FERAtt), is based on the dual-branch architecture and consists of four major modules: (i) an attention module $$G_{att}$$ to extract the attention feature map, (ii) a feature extraction module $G_{ft}$ to obtain essential features from the input image $I$, (iii) a reconstruction module $G_{rec}$ to estimate a good attention image $I_{att}$, and (iv) a representation module $G_{rep}$ that is responsible for the representation and classification of the facial expression image.
 
-
-<div align="center">
-<img src="rec/feratt_arq.png" width="1024">
-</div>
-
-
-
 ## Prerequisites
+
 - Linux or macOS
 - Python 3
 - NVIDIA GPU + CUDA cuDNN
-- PyTorch 0.4
+- PyTorch 1.0
+
+
+Datasets
+-----------
+
+- [Google Facial Expression](https://ai.google/tools/datasets/google-facial-expression/)
+- [AffectNet](http://mohammadmahoor.com/affectnet/)
+- Ck+
+- BU3DFE
+- Jaffe
 
 Installation
 ------------

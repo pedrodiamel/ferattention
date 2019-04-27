@@ -1413,12 +1413,12 @@ class MitosisAttentionGMMNeuralNet(AttentionNeuralNetAbstract):
             z, y_lab_hat, att, _, _ = self.net( x_img, x_img*y_mask[:,1,...].unsqueeze(dim=1) )                
             
             # measure accuracy and record loss           
-            loss_bce  = self.criterion_bce(  y_lab_hat, y_reg.long() )
-            loss_gmm  = self.criterion_gmm( z, y_reg )
+            loss_bce  = self.criterion_bce(  y_lab_hat, y_lab.long() )
+            loss_gmm  = self.criterion_gmm( z, y_reg, data_loader.dataset.numclass_reg  )
             loss_att  = self.criterion_att(  x_org, y_mask, att )            
             loss      = loss_bce + loss_gmm + loss_att           
             topk      = self.topk( y_lab_hat, y_lab.long() )
-            gmm       = self.gmm( z, y_lab )            
+            gmm       = self.gmm( z, y_lab, data_loader.dataset.numclass_reg )            
             
             # optimizer
             self.optimizer.zero_grad()
@@ -1472,11 +1472,11 @@ class MitosisAttentionGMMNeuralNet(AttentionNeuralNetAbstract):
                 
                 # measure accuracy and record loss       
                 loss_bce  = self.criterion_bce( y_lab_hat, y_lab.long() )
-                loss_gmm  = self.criterion_gmm( z, y_reg )
+                loss_gmm  = self.criterion_gmm( z, y_reg, data_loader.dataset.numclass_reg )
                 loss_att  = self.criterion_att( x_org, y_mask, att  )
                 loss      = loss_bce + loss_gmm + loss_att           
                 topk      = self.topk( y_lab_hat, y_lab.long() )               
-                gmm       = self.gmm( z, y_lab )
+                gmm       = self.gmm( z, y_lab, data_loader.dataset.numclass_reg )
                                 
                 # measure elapsed time
                 batch_time.update(time.time() - end)
@@ -1515,7 +1515,7 @@ class MitosisAttentionGMMNeuralNet(AttentionNeuralNetAbstract):
 
             att   = att[0,:,:,:].permute( 1,2,0 ).mean(dim=2)
             srf   = srf[0,:,:,:].permute( 1,2,0 ).sum(dim=2)  
-            fmap  = fmap[0,:,:,:].permute( 1,2,0 ) 
+            fmap  = fmap[0,:,:,:].permute( 1,2,0 ).mean(dim=2) 
                                     
             self.visheatmap.show('Image', x_img.data.cpu()[0].numpy()[0,:,:])           
             self.visheatmap.show('Image Attention',att.cpu().numpy().astype(np.float32) )
@@ -1526,9 +1526,12 @@ class MitosisAttentionGMMNeuralNet(AttentionNeuralNetAbstract):
 
     
     def representation( self, dataloader, breal=True ):
+        
         Y_labs = []
+        Y_regs = []
         Y_lab_hats = []
-        Zs = []         
+        Zs = []        
+        
         self.net.eval()
         with torch.no_grad():
             for i_batch, sample in enumerate( tqdm(dataloader) ):
@@ -1537,21 +1540,26 @@ class MitosisAttentionGMMNeuralNet(AttentionNeuralNetAbstract):
                     x_img, y_lab = sample['image'], sample['label']
                     y_lab = y_lab.argmax(dim=1)
                 else:
-                    x_org, x_img, y_mask, y_lab = sample
-                    y_lab=y_lab[:,0]
+                    x_org, x_img, y_mask, meta = sample                    
+                    y_lab=meta[:,0]
+                    y_reg=meta[:,1]
 
                 if self.cuda:
                     x_img = x_img.cuda()
 
-                z, y_lab_hat, _,_,_ = self.net( x_img )
+                z, y_lab_hat, _, _, _ = self.net( x_img )
+                
                 Y_labs.append(y_lab)
+                Y_regs.append(y_reg)
                 Y_lab_hats.append(y_lab_hat.data.cpu())
                 Zs.append(z.data.cpu())
                 
         Y_labs = np.concatenate( Y_labs, axis=0 )
+        Y_regs = np.concatenate( Y_regs, axis=0 )
         Y_lab_hats = np.concatenate( Y_lab_hats, axis=0 )
-        Zs = np.concatenate( Zs, axis=0 )        
-        return Y_labs, Y_lab_hats, Zs
+        Zs = np.concatenate( Zs, axis=0 )  
+        
+        return Y_labs, Y_regs, Y_lab_hats, Zs
     
     
     def __call__(self, image ):        

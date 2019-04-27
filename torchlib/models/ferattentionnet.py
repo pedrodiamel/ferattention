@@ -256,37 +256,35 @@ class FERAttentionNet(nn.Module):
         # TODO March 01, 2019: Include select model attention
         #self.attention_map = AttentionNet( in_channels=num_channels, out_channels=1  ) 
         #self.attention_map = AttentionResNet( in_channels=num_channels, out_channels=1, pretrained=True  )   
-        
-        self.attention_map = AttentionResNet( in_channels=num_channels, out_channels=num_classes, pretrained=True  )
-        
-        
+                       
         #feature module
         #self.conv_input = nn.Conv2d(in_channels=num_channels, out_channels=num_filters, kernel_size=9, stride=1, padding=4, bias=True)
         #self.feature    = self.make_layer(_Residual_Block_SR, 4, num_filters )
         #self.conv_mid   = nn.Conv2d(in_channels=num_filters, out_channels=num_filters, kernel_size=3, stride=1, padding=1, bias=True)
+                
+        #recostruction
+        #self.reconstruction = nn.Sequential(          
+            #ConvRelu(num_filters, num_filters),
+            #nn.Conv2d(in_channels=num_filters, out_channels=num_channels, kernel_size=1, stride=1, padding=0, bias=True),
+        #)
         
         
+        #////////
+        #attention module
+        self.attention_map = AttentionResNet( in_channels=num_channels, out_channels=num_classes, pretrained=True  )
+        
+        #feature module
         self.conv_input = nn.Conv2d(in_channels=num_channels, out_channels=num_classes, kernel_size=9, stride=1, padding=4, bias=True)
         self.feature    = self.make_layer(_Residual_Block_SR, 8, num_classes )
         self.conv_mid   = nn.Conv2d(in_channels=num_classes, out_channels=num_classes, kernel_size=3, stride=1, padding=1, bias=True)
         
-        
-        
         #recostruction
-        self.reconstruction = nn.Sequential(
-#             ConvRelu(num_filters, num_filters//2),
-#             ConvRelu(num_filters//2, num_filters//4),
-#             nn.Conv2d(in_channels=num_filters//4, out_channels=num_channels, kernel_size=1, stride=1, padding=0, bias=True),
-            
-            
-            #ConvRelu(num_filters, num_filters),
-            #nn.Conv2d(in_channels=num_filters, out_channels=num_channels, kernel_size=1, stride=1, padding=0, bias=True),
-            
+        self.reconstruction = nn.Sequential(            
             ConvRelu( 2*num_classes+num_channels, num_filters),
             nn.Conv2d(in_channels=num_filters, out_channels=num_channels, kernel_size=1, stride=1, padding=0, bias=True),
-            #nn.LeakyReLU(0.2, inplace=True),
         )
-        
+        #////////
+                        
         #classification and reconstruction
         # TODO March 01, 2019: Select of classification and representation module 
         self.netclass = preactresnet.preactresnet18( num_classes=num_classes, num_channels=num_channels  )
@@ -310,7 +308,7 @@ class FERAttentionNet(nn.Module):
         residual = out
         out = self.feature( out )
         out = self.conv_mid(out)
-        g_ft = torch.add(out, residual )
+        g_ft = torch.add( out, residual )
        
         #fusion
         #\sigma(A) * F(I) 
@@ -360,23 +358,35 @@ class FERAttentionGMMNet(nn.Module):
         #attention module
         # TODO March 01, 2019: Include select model attention
         #self.attention_map = AttentionNet( in_channels=num_channels, out_channels=1  )    
-        self.attention_map = AttentionResNet( in_channels=num_channels, out_channels=1, pretrained=True  )  
+#         self.attention_map = AttentionResNet( in_channels=num_channels, out_channels=1, pretrained=True  )  
+        
+#         #feature module
+#         self.conv_input = nn.Conv2d(in_channels=num_channels, out_channels=num_filters, kernel_size=9, stride=1, padding=4, bias=True)
+#         self.feature    = self.make_layer(_Residual_Block_SR, 4, num_filters )
+#         self.conv_mid   = nn.Conv2d(in_channels=num_filters, out_channels=num_filters, kernel_size=3, stride=1, padding=1, bias=True)
+        
+#         #recostruction
+#         self.reconstruction = nn.Sequential(            
+#             ConvRelu(num_filters, num_filters),
+#             nn.Conv2d(in_channels=num_filters, out_channels=num_channels, kernel_size=1, stride=1, padding=0, bias=True),
+#         )
+        
+        
+        #////////
+        #attention module
+        self.attention_map = AttentionResNet( in_channels=num_channels, out_channels=num_classes, pretrained=True  )
         
         #feature module
-        self.conv_input = nn.Conv2d(in_channels=num_channels, out_channels=num_filters, kernel_size=9, stride=1, padding=4, bias=True)
-        self.feature    = self.make_layer(_Residual_Block_SR, 4, num_filters )
-        self.conv_mid   = nn.Conv2d(in_channels=num_filters, out_channels=num_filters, kernel_size=3, stride=1, padding=1, bias=True)
+        self.conv_input = nn.Conv2d(in_channels=num_channels, out_channels=num_classes, kernel_size=9, stride=1, padding=4, bias=True)
+        self.feature    = self.make_layer(_Residual_Block_SR, 8, num_classes )
+        self.conv_mid   = nn.Conv2d(in_channels=num_classes, out_channels=num_classes, kernel_size=3, stride=1, padding=1, bias=True)
         
         #recostruction
-        self.reconstruction = nn.Sequential(
-            #ConvRelu(num_filters, num_filters//2),
-            #ConvRelu(num_filters//2, num_filters//4),
-            #nn.Conv2d(in_channels=num_filters//4, out_channels=num_channels, kernel_size=1, stride=1, padding=0, bias=True),
-            
-            ConvRelu(num_filters, num_filters),
+        self.reconstruction = nn.Sequential(            
+            ConvRelu( 2*num_classes+num_channels, num_filters),
             nn.Conv2d(in_channels=num_filters, out_channels=num_channels, kernel_size=1, stride=1, padding=0, bias=True),
-            #nn.LeakyReLU(0.2, inplace=True),
         )
+        #////////
         
         #classification and reconstruction
         # TODO March 01, 2019: Select of classification and representation module 
@@ -395,7 +405,7 @@ class FERAttentionGMMNet(nn.Module):
                  
         
         #attention map
-        g_att = self.attention_map( x ) 
+        g_att = self.attention_map( x )
             
         #feature module
         out = self.conv_input( x )
@@ -406,20 +416,16 @@ class FERAttentionGMMNet(nn.Module):
        
         #fusion
         #\sigma(A) * F(I) 
-        attmap = torch.mul( F.sigmoid( g_att ) ,  g_ft )               
-        att = self.reconstruction( attmap )   
+        attmap = torch.mul( F.sigmoid( g_att ),  g_ft )               
+        #att = self.reconstruction( attmap )   
+        att = self.reconstruction( torch.cat( (attmap, x, g_att) , dim=1 ) )   
         
-        
-        #att = self.brelu(att)
-        #att = att * ( torch.abs(att) > 0.02 ).float()
-        #att = att * ( att > -0.01 ).float()  - 0.02*( att <= -0.01 ).float() 
-        #att = att * ( att > 0.01 ).float()
             
         att_out = att      
-        if self.training:
-           att_out = att          
-           if random.random() < 0.2:
-               att_out = x_org
+#         if self.training:
+#            att_out = att          
+#            if random.random() < 0.2:
+#                att_out = x_org
         
         
         #classification

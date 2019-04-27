@@ -170,7 +170,7 @@ def main():
             ),
         pathnameback=args.databack, 
         ext='jpg',
-        count=10000, #10000
+        #count=10000, #10000
         num_channels=num_channels,
         iluminate=True, angle=30, translation=0.2, warp=0.1, factor=0.2, 
         #iluminate=True, angle=45, translation=0.3, warp=0.2, factor=0.2,         
@@ -178,7 +178,7 @@ def main():
         transform_image=get_transforms_det( imsize ),
         )
 
-    train_loader_org = DataLoader(train_data_org, batch_size=args.batch_size, shuffle=False, 
+    train_loader_org = DataLoader(train_data_org, batch_size=250, shuffle=False, 
         num_workers=args.workers, pin_memory=network.cuda, drop_last=False)
 
 
@@ -247,24 +247,35 @@ def main():
     # # training neural net
     # network.fit( train_loader, val_loader, args.epochs, args.snapshot )
 
+    
+    n_clusters=2
     division = 100
     #network.start_epoch = 0
     current_epochs = network.start_epoch + args.epochs
     for d in range(division):
 
+        
+        print('Iter %d \n', d, flush=True)
+        
         # training neural net
-        if d > 3:
-            network.fit( train_loader, val_loader, current_epochs, args.snapshot )
-            network.start_epoch = current_epochs
-            current_epochs += args.epochs #int(np.floor(np.exp(d)))
-            continue
-
-        Z, Y_org, Y_reg, Y_hat = network.representation( train_loader_org )
-        print('\n',flush=True)
+        #if d > 3:
+        #    network.fit( train_loader, val_loader, current_epochs, args.snapshot )
+        #    network.start_epoch = current_epochs
+        #    current_epochs += args.epochs #int(np.floor(np.exp(d)))
+        #    continue
+        
+        
+        network.fit( train_loader, val_loader, current_epochs, args.snapshot )
+        
+        
+        print('Representation \n', flush=True)
+        Y_org, Y_reg, Y_hat, Z = network.representation( train_loader_org, breal=False )
+        print('\n', flush=True)
         
         # mitosis
         print('\nMitosis ... ')
-        print('class: {} to {} '.format(train_data.numclass_reg, train_data.numclass_reg*2) )
+        #print('class: {} to {} '.format(train_data.numclass_reg, train_data.numclass_reg*2) )
+        print('number of clusters: {} to {} '.format( n_clusters )
         
         k=0
         label_reg = np.zeros_like(Y_org)
@@ -272,12 +283,12 @@ def main():
             
             print( 'regenerate: {} '.format( train_data.classes_reg[c] ) )
             index = np.where( Y_reg == train_data.classes_reg[c] )[0]  
-                        
+                                 
             if len(index) == 0:
                 print('Error: class not elements ')
                 assert(False)
             
-            if len( index ) < 400:
+            if len( index ) < 100:
                 print('Not mitosis ... ')
                 label_reg[index] = k; k+=1
                 continue
@@ -285,6 +296,12 @@ def main():
             y_reg = KMeans( n_clusters=2, random_state=0, max_iter=3000, tol=1e-3,  n_init=1 ).fit_predict( Z[index,...] )
             cls, frc = np.unique(y_reg, return_counts=True)
             print('frecuence: {} '.format(frc) )
+            
+            if np.min(frc) < 50:
+                print('Not mitosis ... ')
+                label_reg[index] = k; k+=1
+                continue
+                
                         
             label_reg[index] = y_reg + k
             k+=2       
@@ -302,7 +319,6 @@ def main():
         train_loader_org.dataset.regeneration( label_reg )                    
         network.start_epoch = current_epochs
         current_epochs += args.epochs # int(np.floor(np.exp(d)))
-
 
 
     print("Optimization Finished!")

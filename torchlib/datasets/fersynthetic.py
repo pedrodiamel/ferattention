@@ -291,7 +291,9 @@ class MitosisSyntheticFaceDataset( data.Dataset ):
         self.generate = generate
         self.ren = Generator( iluminate, angle, translation, warp, factor )        
         self.count=count
-        self.classes_reg   = self.classes
+        
+        self.labels_reg    = self.labels
+        self.classes_reg   = np.unique(self.labels_reg)
         self.numclass_reg  = self.num_classes
         
         self.transform_image = transform_image 
@@ -299,11 +301,11 @@ class MitosisSyntheticFaceDataset( data.Dataset ):
        
 
     def regeneration(self, label_regeneration ):
-        
-        assert( len(label_regeneration) == len(self.labels_reg) )                
-        self.labels_reg    = label_regeneration
+        assert( len(label_regeneration) == len(self.labels_reg) )
+        self.labels_reg    = label_regeneration.astype('int')
         self.classes_reg   = np.unique(self.labels_reg)
         self.numclass_reg  = len(self.classes_reg)
+        
 
 
     def __len__(self):
@@ -313,7 +315,7 @@ class MitosisSyntheticFaceDataset( data.Dataset ):
 
         # read image 
         image, label = self.data[ (idx)%len(self.data)  ]
-        label_reg    = self.labels_reg[idx]
+        label_reg    = self.labels_reg[ (idx)%len(self.data)  ]
 
         #A,A_inv = F.compute_norm_mat( image.shape[1], image.shape[0] )
         #image = F.equalization(image,A,A_inv)

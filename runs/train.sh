@@ -3,7 +3,7 @@
 # parameters
 DATABACK='~/.datasets/coco'
 DATA='~/.datasets'
-NAMEDATASET='ckdark' #affectnetdark, bu3dfedark, ckdark, jaffedark
+NAMEDATASET='bu3dfedark' #affectnetdark, bu3dfedark, ckdark, jaffedark
 PROJECT='../out'
 EPOCHS=1000
 BATCHSIZE=64 #64, 128, 160, 200, 240
@@ -18,14 +18,14 @@ ARCH='ferattention' #ferattention, ferattentiongmm, ferattentionstn
 LOSS='attloss'
 OPT='adam'
 SCHEDULER='step'
-NUMCLASS=8 #6, 7, 8
+NUMCLASS=7 #6, 7, 8
 NUMCHANNELS=3
 DIM=64
 SNAPSHOT=10
 IMAGESIZE=128
 KFOLD=0
 NACTOR=10
-EXP_NAME='att_'$NAMEMETHOD'_'$ARCH'_'$LOSS'_'$OPT'_'$NAMEDATASET'_dim'$DIM'_preactresnet18x32_fold'$KFOLD'Gt_009'
+EXP_NAME='att_'$NAMEMETHOD'_'$ARCH'_'$LOSS'_'$OPT'_'$NAMEDATASET'_dim'$DIM'_preactresnet18x32_fold'$KFOLD'Gt_000'
 
 
 rm -rf $PROJECT/$EXP_NAME/$EXP_NAME.log

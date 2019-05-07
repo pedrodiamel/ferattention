@@ -6,7 +6,7 @@ DATA='~/.datasets'
 NAMEDATASET='affectnetdark' #affectnetdark, bu3dfedark, ckdark, jaffedark
 PROJECT='../out'
 EPOCHS=5
-BATCHSIZE=64 #64, 128, 160, 200, 240
+BATCHSIZE=128 #64, 128, 160, 200, 240
 LEARNING_RATE=0.0001
 MOMENTUM=0.5
 PRINT_FREQ=100
@@ -25,7 +25,7 @@ SNAPSHOT=10
 IMAGESIZE=128
 KFOLD=0
 NACTOR=10
-EXP_NAME='mitosis_'$NAMEMETHOD'_'$ARCH'_'$LOSS'_'$OPT'_'$NAMEDATASET'_dim'$DIM'_preactresnet18x32_fold'$KFOLD'Gt_000'
+EXP_NAME='mitosis_'$NAMEMETHOD'_'$ARCH'_'$LOSS'_'$OPT'_'$NAMEDATASET'_dim'$DIM'_preactresnet18x64_fold'$KFOLD'_000'
 
 
 rm -rf $PROJECT/$EXP_NAME/$EXP_NAME.log

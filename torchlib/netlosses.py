@@ -362,8 +362,8 @@ class DGMMLoss(nn.Module):
                 yi = torch.mode( y[i], dim=0)[0]
                 y_ul.append( yi )
         
-            y_ul = torch.stack(y_ul,dim=0)         
-            y_ul = to_gpu(y_ul, self.cuda) 
+            y_ul = torch.stack(y_ul,dim=0)
+            y_ul = to_gpu(y_ul, self.cuda)
             
             x = torch.cat( [x, x_ul], dim=0 )
             y = torch.cat( [y, y_ul], dim=0 )

@@ -287,6 +287,7 @@ class MitosisSyntheticFaceDataset( data.Dataset ):
         
         self.num_classes=data.numclass
         self.labels = data.labels
+        self.classes = np.unique(self.labels)
         self.num_channels = num_channels
         self.generate = generate
         self.ren = Generator( iluminate, angle, translation, warp, factor )        
@@ -403,6 +404,7 @@ class MitosisSecuencialSyntheticFaceDataset( data.Dataset ):
         
         self.num_classes = data.numclass
         self.labels = data.labels
+        self.classes = np.unique(self.labels)
         self.num_channels = num_channels
         self.generate = generate
         self.ren = Generator( iluminate, angle, translation, warp, factor )        

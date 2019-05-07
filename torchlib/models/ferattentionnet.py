@@ -8,6 +8,7 @@ from torchvision import models
 import torchvision
 
 from . import preactresnet
+from . import resnet
 from . import stn
 
 
@@ -283,11 +284,15 @@ class FERAttentionNet(nn.Module):
             ConvRelu( 2*num_classes+num_channels, num_filters),
             nn.Conv2d(in_channels=num_filters, out_channels=num_channels, kernel_size=1, stride=1, padding=0, bias=True),
         )
+        self.conv2_bn = nn.BatchNorm2d(num_channels)
+        
         #////////
                         
         #classification and reconstruction
         # TODO March 01, 2019: Select of classification and representation module 
         self.netclass = preactresnet.preactresnet18( num_classes=num_classes, num_channels=num_channels  )
+        #self.netclass = resnet.resnet18( num_classes=num_classes, num_channels=num_channels )
+        
     
     
     def make_layer(self, block, num_of_layer, num_ft):
@@ -314,7 +319,7 @@ class FERAttentionNet(nn.Module):
         #\sigma(A) * F(I) 
         attmap = torch.mul( F.sigmoid( g_att ) ,  g_ft )   
         att = self.reconstruction( torch.cat( (attmap, x, g_att) , dim=1 ) )   
-        
+        att = F.relu(self.conv2_bn(att))
 
         att_out = att      
         # if self.training:
@@ -327,7 +332,8 @@ class FERAttentionNet(nn.Module):
         
         
         #classification
-        att_pool = F.avg_pool2d(att_out, 4) # <- 32x32 source                     
+        att_pool = F.avg_pool2d(att_out, 2) # <- 32x32 source                     
+        #att_pool = F.interpolate(att_out, scale_factor=2 ,mode='bilinear', align_corners=False) #256 x2
         y = self.netclass( att_pool )
 
 #         #ensamble classification
@@ -386,6 +392,7 @@ class FERAttentionGMMNet(nn.Module):
             ConvRelu( 2*num_classes+num_channels, num_filters),
             nn.Conv2d(in_channels=num_filters, out_channels=num_channels, kernel_size=1, stride=1, padding=0, bias=True),
         )
+        self.conv2_bn = nn.BatchNorm2d(num_channels)
         #////////
         
         #classification and reconstruction
@@ -416,9 +423,13 @@ class FERAttentionGMMNet(nn.Module):
        
         #fusion
         #\sigma(A) * F(I) 
-        attmap = torch.mul( F.sigmoid( g_att ),  g_ft )               
+        #attmap = torch.mul( F.sigmoid( g_att ),  g_ft )               
         #att = self.reconstruction( attmap )   
+        #att = self.reconstruction( torch.cat( (attmap, x, g_att) , dim=1 ) )   
+        
+        attmap = torch.mul( F.sigmoid( g_att ) ,  g_ft )   
         att = self.reconstruction( torch.cat( (attmap, x, g_att) , dim=1 ) )   
+        att = F.relu(self.conv2_bn(att))
         
             
         att_out = att      
@@ -429,7 +440,7 @@ class FERAttentionGMMNet(nn.Module):
         
         
         #classification
-        att_pool = F.avg_pool2d(att_out, 4) # <- 32x32 source                     
+        att_pool = F.avg_pool2d(att_out, 2) # <- 32x32 source                     
         z, y = self.netclass( att_pool )
   
 

@@ -246,17 +246,13 @@ def main():
 
     # # training neural net
     # network.fit( train_loader, val_loader, args.epochs, args.snapshot )
-
     
     n_clusters=2
     division = 100
     #network.start_epoch = 0
     current_epochs = network.start_epoch + args.epochs
     for d in range(division):
-
-        
-        print('Iter %d \n', d, flush=True)
-        
+                        
         # training neural net
         #if d > 3:
         #    network.fit( train_loader, val_loader, current_epochs, args.snapshot )
@@ -275,25 +271,26 @@ def main():
         # mitosis
         print('\nMitosis ... ')
         #print('class: {} to {} '.format(train_data.numclass_reg, train_data.numclass_reg*2) )
-        print('number of clusters: {} to {} '.format( n_clusters )
+        print('number of clusters: {} '.format( n_clusters ))
         
+                
         k=0
         label_reg = np.zeros_like(Y_org)
-        for c in range(  train_data.numclass_reg ): 
+        for c in range(  train_data.num_classes ): 
             
-            print( 'regenerate: {} '.format( train_data.classes_reg[c] ) )
-            index = np.where( Y_reg == train_data.classes_reg[c] )[0]  
+            print( 'regenerate: {} '.format( train_data.classes[c] ) )
+            index = np.where( Y_org == train_data.classes[c] )[0]  
                                  
             if len(index) == 0:
                 print('Error: class not elements ')
                 assert(False)
             
             if len( index ) < 100:
-                print('Not mitosis ... ')
+                print('Not mitosis, number the element is: {} ... '.format(len( index )))
                 label_reg[index] = k; k+=1
                 continue
                         
-            y_reg = KMeans( n_clusters=2, random_state=0, max_iter=3000, tol=1e-3,  n_init=1 ).fit_predict( Z[index,...] )
+            y_reg = KMeans( n_clusters=n_clusters, random_state=0, max_iter=3000, tol=1e-3,  n_init=1 ).fit_predict( Z[index,...] )
             cls, frc = np.unique(y_reg, return_counts=True)
             print('frecuence: {} '.format(frc) )
             
@@ -315,6 +312,7 @@ def main():
         #    drop_last=True
         #)        
         
+        n_clusters = n_clusters+1 if n_clusters <= 5 else n_clusters
         train_loader.dataset.regeneration( label_reg )
         train_loader_org.dataset.regeneration( label_reg )                    
         network.start_epoch = current_epochs

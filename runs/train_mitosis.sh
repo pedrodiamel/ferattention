@@ -5,8 +5,8 @@ DATABACK='~/.datasets/coco'
 DATA='~/.datasets'
 NAMEDATASET='affectnetdark' #affectnetdark, bu3dfedark, ckdark, jaffedark
 PROJECT='../out'
-EPOCHS=5
-BATCHSIZE=128 #64, 128, 160, 200, 240
+EPOCHS=10
+BATCHSIZE=512 #64, 128, 192, 240, 256
 LEARNING_RATE=0.0001
 MOMENTUM=0.5
 PRINT_FREQ=100
@@ -22,10 +22,10 @@ NUMCLASS=8 #6, 7, 8
 NUMCHANNELS=3
 DIM=64
 SNAPSHOT=10
-IMAGESIZE=128
+IMAGESIZE=64
 KFOLD=0
 NACTOR=10
-EXP_NAME='mitosis_'$NAMEMETHOD'_'$ARCH'_'$LOSS'_'$OPT'_'$NAMEDATASET'_dim'$DIM'_preactresnet18x64_fold'$KFOLD'_000'
+EXP_NAME='mitosis_'$NAMEMETHOD'_'$ARCH'_'$LOSS'_'$OPT'_'$NAMEDATASET'_dim'$DIM'_preactresnet18x32_fold'$KFOLD'_001'
 
 
 rm -rf $PROJECT/$EXP_NAME/$EXP_NAME.log

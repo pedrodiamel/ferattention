@@ -24,7 +24,8 @@ from torchlib.attentionnet import (
     AttentionSTNNeuralNet, 
     AttentionGMMNeuralNet, 
     AttentionGMMSTNNeuralNet,
-    MitosisAttentionGMMNeuralNet
+    MitosisAttentionGMMNeuralNet,
+    MitosisAttentionGMMAccumulationNeuralNet
     )
 
 from pytvision.transforms import transforms as mtrans
@@ -121,7 +122,8 @@ def main():
 
     fname = args.name_method
     fnet = {
-        'mitosisattgmmnet':MitosisAttentionGMMNeuralNet, 
+        'mitosisattgmmnet': MitosisAttentionGMMNeuralNet, 
+        #'mitosisattgmmnet': MitosisAttentionGMMAccumulationNeuralNet,
         }
 
     network = fnet[fname](
@@ -196,7 +198,7 @@ def main():
             ),
         pathnameback=args.databack, 
         ext='jpg',
-        count=50000, #100000
+        count=640000, #100000, (512/8) * 10000
         num_channels=num_channels,
         iluminate=True, angle=30, translation=0.2, warp=0.1, factor=0.2,
         #iluminate=True, angle=45, translation=0.3, warp=0.2, factor=0.2,
@@ -248,6 +250,7 @@ def main():
     # network.fit( train_loader, val_loader, args.epochs, args.snapshot )
     
     n_clusters=2
+    max_clusters=3
     division = 100
     #network.start_epoch = 0
     current_epochs = network.start_epoch + args.epochs
@@ -312,7 +315,7 @@ def main():
         #    drop_last=True
         #)        
         
-        n_clusters = n_clusters+1 if n_clusters <= 5 else n_clusters
+        n_clusters = n_clusters+1 if n_clusters < max_clusters else n_clusters
         train_loader.dataset.regeneration( label_reg )
         train_loader_org.dataset.regeneration( label_reg )                    
         network.start_epoch = current_epochs

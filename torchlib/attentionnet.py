@@ -955,7 +955,7 @@ class AttentionGMMNeuralNet(AttentionNeuralNetAbstract):
 
             att   = att[0,:,:,:].permute( 1,2,0 ).mean(dim=2)
             srf   = srf[0,:,:,:].permute( 1,2,0 ).sum(dim=2)  
-            fmap  = fmap[0,:,:,:].permute( 1,2,0 ) 
+            fmap  = fmap[0,:,:,:].permute( 1,2,0 ).mean(dim=2) 
                                     
             self.visheatmap.show('Image', x_img.data.cpu()[0].numpy()[0,:,:])           
             self.visheatmap.show('Image Attention',att.cpu().numpy().astype(np.float32) )
@@ -1399,7 +1399,7 @@ class MitosisAttentionGMMNeuralNet(AttentionNeuralNetAbstract):
             
             y_lab = meta[:,0]
             y_reg = meta[:,1]
-            y_theta = meta[:,2:].view(-1, 2, 3)           
+            #y_theta = meta[:,2:].view(-1, 2, 3)           
 
             if self.cuda:
                 x_org   = x_org.cuda()
@@ -1407,7 +1407,7 @@ class MitosisAttentionGMMNeuralNet(AttentionNeuralNetAbstract):
                 y_mask  = y_mask.cuda() 
                 y_lab   = y_lab.cuda()
                 y_reg   = y_reg.cuda()
-                y_theta = y_theta.cuda()
+                #y_theta = y_theta.cuda()
             
             # fit (forward)            
             z, y_lab_hat, att, _, _ = self.net( x_img, x_img*y_mask[:,1,...].unsqueeze(dim=1) )                
@@ -1457,7 +1457,7 @@ class MitosisAttentionGMMNeuralNet(AttentionNeuralNetAbstract):
                                                
                 y_lab = meta[:,0]
                 y_reg = meta[:,1]
-                y_theta   = meta[:,2:].view(-1, 2, 3)
+                #y_theta   = meta[:,2:].view(-1, 2, 3)
                                 
                 if self.cuda:
                     x_org   = x_org.cuda()
@@ -1465,7 +1465,7 @@ class MitosisAttentionGMMNeuralNet(AttentionNeuralNetAbstract):
                     y_mask  = y_mask.cuda()
                     y_lab   = y_lab.cuda()
                     y_reg   = y_reg.cuda()
-                    y_theta = y_theta.cuda()
+                    #y_theta = y_theta.cuda()
                 
                 # fit (forward)            
                 z, y_lab_hat, att, fmap, srf  = self.net( x_img )                 
@@ -1583,3 +1583,294 @@ class MitosisAttentionGMMNeuralNet(AttentionNeuralNetAbstract):
             assert(False)
 
         self.s_loss = loss
+
+        
+        
+class MitosisAttentionGMMAccumulationNeuralNet(MitosisAttentionGMMNeuralNet): 
+    """
+    Mitosis Attention Neural Net and GMM representation with Accumulation
+    Args:
+        -patchproject (str): path project
+        -nameproject (str):  name project
+        -no_cuda (bool): system cuda (default is True)
+        -parallel (bool)
+        -seed (int)
+        -print_freq (int)
+        -gpu (int)
+        -view_freq (in epochs)
+    """
+    def __init__(self,
+        patchproject,
+        nameproject,
+        no_cuda=True,
+        parallel=False,
+        seed=1,
+        print_freq=10,
+        gpu=0,
+        view_freq=1
+        ):
+        super(MitosisAttentionGMMAccumulationNeuralNet, self).__init__( patchproject, nameproject, no_cuda, parallel, seed, print_freq, gpu, view_freq  )
+        
+
+ 
+    def create(self, 
+        arch, 
+        num_output_channels,
+        num_input_channels,        
+        loss,
+        lr,
+        optimizer,
+        lrsch,
+        momentum=0.9,
+        weight_decay=5e-4,
+        pretrained=False,
+        size_input=388,
+        num_classes=8,
+        ):
+        """
+        Create    
+        Args:        
+            -arch (string): architecture
+            -num_output_channels,
+            -num_input_channels,  
+            -loss (string):
+            -lr (float): learning rate
+            -optimizer (string) : 
+            -lrsch (string): scheduler learning rate
+            -pretrained (bool)
+            -
+        """        
+        super(MitosisAttentionGMMAccumulationNeuralNet, self).create( 
+            arch, 
+            num_output_channels,
+            num_input_channels,        
+            loss,
+            lr,
+            optimizer,
+            lrsch,
+            momentum,
+            weight_decay,
+            pretrained,
+            size_input,
+            num_classes,          
+        )
+       
+      
+    def training(self, data_loader, epoch=0):        
+
+        #reset logger
+        self.logger_train.reset()
+        data_time = AverageMeter()
+        batch_time = AverageMeter()
+        
+        batch_acm_size = 0
+        batch_acm_iter = 0
+        batch_acm = 4
+                
+        zs =[]
+        y_reg_s =[]
+        y_lab_s =[]
+        #y_lab_hat_s =[]
+        #x_s=[]
+        #y_mask_s=[]
+        #att_s=[]
+
+        # switch to evaluate mode
+        self.net.train()
+
+        end = time.time()
+        for i, (x_org, x_img, y_mask, meta ) in enumerate(data_loader):
+            
+            # measure data loading time
+            data_time.update(time.time() - end)
+            batch_size = x_img.shape[0]
+            
+            y_lab = meta[:,0]
+            y_reg = meta[:,1]
+            #y_theta = meta[:,2:].view(-1, 2, 3)           
+
+            if self.cuda:
+                x_org   = x_org.cuda()
+                x_img   = x_img.cuda() 
+                y_mask  = y_mask.cuda() 
+                y_lab   = y_lab.cuda()
+                y_reg   = y_reg.cuda()
+                #y_theta = y_theta.cuda()
+            
+            # fit (forward)            
+            z, y_lab_hat, att, _, _ = self.net( x_img, x_img*y_mask[:,1,...].unsqueeze(dim=1) )     
+            
+            
+            # Acumulation
+            zs.append(z)
+            y_reg_s.append(y_reg)
+            y_lab_s.append(y_lab)
+            #y_lab_hat_s.append(y_lab_hat)
+            
+            #x_s.append(x_org)
+            #y_mask_s.append(y_mask)
+            #att_s.append(att)
+                        
+            
+            if (i+1)%batch_acm == 0: 
+                
+                zs = torch.cat(zs, 0)
+                y_reg_s = torch.cat(y_reg_s, 0)
+                y_lab_s = torch.cat(y_lab_s, 0)
+                #y_lab_hat_s = torch.cat(y_lab_hat_s, 0)                
+                                
+                #tx_s = torch.cat(x_s, 0)     
+                #ty_mask_s = torch.cat(y_mask_s, 0)     
+                #tatt_s = torch.cat(att_s, 0)     
+                
+                #tys = tys.numpy() 
+                batch_acm_size = y_reg_s.shape[0]  
+            
+            
+                # measure accuracy and record loss           
+                #loss_bce  = self.criterion_bce(  y_lab_hat_s, y_lab_s.long() )
+                loss_bce  = self.criterion_bce(  y_lab_hat, y_lab.long() )
+                loss_gmm  = self.criterion_gmm(  zs, y_reg_s, data_loader.dataset.numclass_reg  )
+                #loss_att  = self.criterion_att(  tx_s, ty_mask_s, tatt_s )       
+                loss_att  = self.criterion_att(  x_org, y_mask, att )   
+                loss      = loss_bce + loss_gmm + loss_att           
+                
+                #topk      = self.topk( y_lab_hat_s, y_lab_s.long() )
+                topk      = self.topk( y_lab_hat, y_lab.long() )
+                gmm       = self.gmm( zs, y_lab_s, data_loader.dataset.numclass_reg )            
+                                
+                
+                # optimizer
+                self.optimizer.zero_grad()
+                (loss).backward() #batch_size
+                self.optimizer.step()
+            
+                # update
+                self.logger_train.update(
+                    {'loss': loss.cpu().item(), 'loss_gmm': loss_gmm.cpu().item(), 'loss_bce': loss_bce.cpu().item(), 'loss_att':loss_att.cpu().item() },
+                    {'topk': topk[0][0].cpu(), 'gmm': gmm.cpu().item() },
+                    batch_size,
+                    )
+
+                # measure elapsed time
+                batch_time.update(time.time() - end)
+                end = time.time()
+
+                if batch_acm_iter % 10 == 0:  #self.print_freq
+                    self.logger_train.logger( epoch, epoch + float(i+1)/len(data_loader), i, len(data_loader), batch_time,   )
+                
+
+                batch_acm_iter += 1               
+                zs =[]
+                y_reg_s =[]
+                y_lab_s =[]
+                #y_lab_hat_s =[]
+                #x_s=[]
+                #y_mask_s=[]
+                #att_s=[]
+
+                
+                
+#     def training(self, data_loader, epoch=0):        
+
+#         #reset logger
+#         self.logger_train.reset()
+#         data_time = AverageMeter()
+#         batch_time = AverageMeter()
+        
+#         batch_acm_size = 0
+#         batch_acm_iter = 0
+#         batch_acm = 10
+                
+#         loss = 0
+#         loss_gmm = 0
+#         loss_bce = 0
+#         loss_att = 0
+        
+#         topk = 0
+#         gmm = 0
+        
+
+#         # switch to evaluate mode
+#         self.net.train()
+
+#         end = time.time()
+#         self.optimizer.zero_grad()
+        
+#         for i, (x_org, x_img, y_mask, meta ) in enumerate(data_loader):
+            
+#             # measure data loading time
+#             data_time.update(time.time() - end)
+#             batch_size = x_img.shape[0]
+            
+#             y_lab = meta[:,0]
+#             y_reg = meta[:,1]
+#             y_theta = meta[:,2:].view(-1, 2, 3)           
+
+#             if self.cuda:
+#                 x_org   = x_org.cuda()
+#                 x_img   = x_img.cuda() 
+#                 y_mask  = y_mask.cuda() 
+#                 y_lab   = y_lab.cuda()
+#                 y_reg   = y_reg.cuda()
+#                 y_theta = y_theta.cuda()
+            
+#             # fit (forward)            
+#             z, y_lab_hat, att, _, _ = self.net( x_img, x_img*y_mask[:,1,...].unsqueeze(dim=1) )     
+            
+            
+#             # Acumulation
+            
+#             # measure accuracy and record loss           
+#             loss_bce_current  = self.criterion_bce(  y_lab_hat, y_lab.long() )
+#             loss_gmm_current  = self.criterion_gmm(  z, y_reg, data_loader.dataset.numclass_reg  )     
+#             loss_att_current  = self.criterion_att(  x_org, y_mask, att )   
+            
+#             loss_current      = (loss_bce_current + loss_gmm_current + loss_att_current)/batch_acm               
+#             topk_current      = self.topk( y_lab_hat, y_lab.long() )
+#             gmm_current       = self.gmm( z, y_lab, data_loader.dataset.numclass_reg )       
+                                    
+#             (loss_current).backward() #batch_size
+            
+#             loss     = loss + loss_current.cpu().item()
+#             loss_bce = loss_bce + loss_bce_current.cpu().item()/batch_acm 
+#             loss_gmm = loss_gmm + loss_gmm_current.cpu().item()/batch_acm            
+#             loss_att = loss_att + loss_att_current.cpu().item()/batch_acm 
+            
+#             topk = topk + topk_current[0][0].cpu()/batch_acm 
+#             gmm  = gmm  + gmm_current.cpu().item()/batch_acm  
+            
+            
+#             if (i+1)%batch_acm == 0: 
+                
+                
+#                 batch_acm_size = batch_acm*batch_size     
+#                 self.optimizer.step()
+#                 self.optimizer.zero_grad()
+                
+#                 # optimizer
+#                 #self.optimizer.zero_grad()
+#                 #(loss).backward() #batch_size
+#                 #self.optimizer.step()
+            
+#                 # update
+#                 self.logger_train.update(
+#                     {'loss': loss, 'loss_gmm': loss_gmm, 'loss_bce': loss_bce, 'loss_att':loss_att },
+#                     {'topk': topk, 'gmm': gmm },
+#                     batch_size,
+#                     )
+
+#                 # measure elapsed time
+#                 batch_time.update(time.time() - end)
+#                 end = time.time()
+
+#                 if batch_acm_iter % 10 == 0:  #self.print_freq
+#                     self.logger_train.logger( epoch, epoch + float(i+1)/len(data_loader), i, len(data_loader), batch_time,   )
+                
+
+#                 loss = 0
+#                 loss_gmm = 0
+#                 loss_bce = 0
+#                 loss_att = 0
+#                 topk = 0
+#                 gmm = 0

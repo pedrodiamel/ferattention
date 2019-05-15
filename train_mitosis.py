@@ -198,7 +198,7 @@ def main():
             ),
         pathnameback=args.databack, 
         ext='jpg',
-        count=640000, #100000, (512/8) * 10000
+        count=64000, #100000, (512/8) * 10000
         num_channels=num_channels,
         iluminate=True, angle=30, translation=0.2, warp=0.1, factor=0.2,
         #iluminate=True, angle=45, translation=0.3, warp=0.2, factor=0.2,
@@ -231,7 +231,7 @@ def main():
             ),
         pathnameback=args.databack, 
         ext='jpg',
-        count=10000, #10000
+        count=6400, #10000
         num_channels=num_channels,
         iluminate=True, angle=30, translation=0.2, warp=0.1, factor=0.2, 
         #iluminate=True, angle=45, translation=0.3, warp=0.2, factor=0.2,         
@@ -288,19 +288,19 @@ def main():
                 print('Error: class not elements ')
                 assert(False)
             
-            if len( index ) < 100:
-                print('Not mitosis, number the element is: {} ... '.format(len( index )))
-                label_reg[index] = k; k+=1
-                continue
+#             if len( index ) < 100:
+#                 print('Not mitosis, number the element is: {} ... '.format(len( index )))
+#                 label_reg[index] = k; k+=1
+#                 continue
                         
             y_reg = KMeans( n_clusters=n_clusters, random_state=0, max_iter=3000, tol=1e-3,  n_init=1 ).fit_predict( Z[index,...] )
             cls, frc = np.unique(y_reg, return_counts=True)
             print('frecuence: {} '.format(frc) )
             
-            if np.min(frc) < 50:
-                print('Not mitosis ... ')
-                label_reg[index] = k; k+=1
-                continue
+#             if np.min(frc) < 50:
+#                 print('Not mitosis ... ')
+#                 label_reg[index] = k; k+=1
+#                 continue
                 
                         
             label_reg[index] = y_reg + k

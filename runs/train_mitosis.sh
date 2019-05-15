@@ -3,21 +3,21 @@
 # parameters
 DATABACK='~/.datasets/coco'
 DATA='~/.datasets'
-NAMEDATASET='affectnetdark' #affectnetdark, bu3dfedark, ckdark, jaffedark
+NAMEDATASET='ckdark' #affectnetdark, bu3dfedark, ckdark, jaffedark
 PROJECT='../out'
-EPOCHS=10
-BATCHSIZE=512 #64, 128, 192, 240, 256
+EPOCHS=50
+BATCHSIZE=800 #64, 128, 192, 240, 256
 LEARNING_RATE=0.0001
 MOMENTUM=0.5
-PRINT_FREQ=100
-WORKERS=30
-RESUME='model_best.pth.tar' #chk000010, model_best
+PRINT_FREQ=10
+WORKERS=20
+RESUME='chk000000.pth.tar' #chk000010, model_best
 GPU=0
 NAMEMETHOD='mitosisattgmmnet' # mitosisattgmmnet
 ARCH='ferattentiongmm' #ferattention, ferattentiongmm, ferattentionstn
 LOSS='attloss'
 OPT='adam'
-SCHEDULER='step'
+SCHEDULER='fixed'
 NUMCLASS=8 #6, 7, 8
 NUMCHANNELS=3
 DIM=64
@@ -25,7 +25,7 @@ SNAPSHOT=10
 IMAGESIZE=64
 KFOLD=0
 NACTOR=10
-EXP_NAME='mitosis_'$NAMEMETHOD'_'$ARCH'_'$LOSS'_'$OPT'_'$NAMEDATASET'_dim'$DIM'_preactresnet18x32_fold'$KFOLD'_001'
+EXP_NAME='mitosis_'$NAMEMETHOD'_'$ARCH'_'$LOSS'_'$OPT'_'$NAMEDATASET'_dim'$DIM'_preactresnet18x32_fold'$KFOLD'_002'
 
 
 rm -rf $PROJECT/$EXP_NAME/$EXP_NAME.log

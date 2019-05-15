@@ -333,7 +333,7 @@ class DGMMLoss(nn.Module):
         mix (bool): mixup
     """
     
-    def __init__(self, classes=10, sigma=1.0, cuda=False, mix=False, knn=False  ):
+    def __init__(self, classes=10, sigma=1.0, cuda=False, mix=True, knn=False  ):
         super(DGMMLoss, self).__init__()
         self.classes = classes
         self.sigma   = sigma 
@@ -353,17 +353,18 @@ class DGMMLoss(nn.Module):
             indices = torch.randperm(x.shape[0])  
             if self.cuda: lam = lam.cuda()  
             x_ul = x * lam.expand_as(x) + x[indices,...] * (1 - lam.expand_as(x))
+            y_ul = y * lam.expand_as(y) + y[indices] * (1 - lam.expand_as(y))
             
-            y_ul = []
-            for xi in x_ul:
-                d = torch.sum((xi - x)**2 ,dim=1).squeeze() 
-                #i = torch.argmin(d, dim=0) #1-NN
-                i = torch.topk(d,k=k,dim=0,largest=False)[1] #k-NN
-                yi = torch.mode( y[i], dim=0)[0]
-                y_ul.append( yi )
+#             y_ul = []
+#             for xi in x_ul:
+#                 d = torch.sum((xi - x)**2 ,dim=1).squeeze() 
+#                 #i = torch.argmin(d, dim=0) #1-NN
+#                 i = torch.topk(d,k=k,dim=0,largest=False)[1] #k-NN
+#                 yi = torch.mode( y[i], dim=0)[0]
+#                 y_ul.append( yi )
         
-            y_ul = torch.stack(y_ul,dim=0)
-            y_ul = to_gpu(y_ul, self.cuda)
+#             y_ul = torch.stack(y_ul,dim=0)
+#             y_ul = to_gpu(y_ul, self.cuda)
             
             x = torch.cat( [x, x_ul], dim=0 )
             y = torch.cat( [y, y_ul], dim=0 )

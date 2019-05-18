@@ -22,6 +22,7 @@ Pytorch implementation for FERAtt neural net. Facial Expression Recognition with
 
 
 ## Prerequisites
+
 - Linux or macOS
 - Python 3
 - NVIDIA GPU + CUDA cuDNN

@@ -15,7 +15,8 @@ def make_dataset( path, metadata, train, org ):
     ifilter = np.array([ exp in [0,1,2,3,4,5,6,7] for i,exp in enumerate( data['expression'] )  ])    
     
     if train:
-        ifilter[ np.array( [235929, 315313] if org else [235929, 315313, 126295]   )  ] = False
+        #ifilter[ np.array( [235929, 315313] if org else [235929, 315313, 126295]   )  ] = False
+        ifilter[ np.array( [235929, 315313] if org else [235929, 315313, 87432, 126295]   )  ] = False
     
     
     ifilter = np.where( ifilter == True )[0]

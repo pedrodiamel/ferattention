@@ -115,7 +115,7 @@ def create_dataset():
     pathname = os.path.expanduser( pathname )
     dataset  = FactoryDataset.affect
     newname  = 'affectnetdarck'
-    subset   = FactoryDataset.validation
+    subset   = FactoryDataset.training
     height   = 128
     width    = 128
     

@@ -2,7 +2,7 @@
 out
 netruns
 
-
+runs/core.*
 *.png
 *.jpg
 

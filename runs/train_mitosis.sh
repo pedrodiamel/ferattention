@@ -5,13 +5,13 @@ DATABACK='~/.datasets/coco'
 DATA='~/.datasets'
 NAMEDATASET='affectnetdark' #affectnetdark, bu3dfedark, ckdark, jaffedark
 PROJECT='../out'
-EPOCHS=20
-BATCHSIZE=800 #64, 128, 192, 240, 256
+EPOCHS=40
+BATCHSIZE=100 #64, 128, 192, 240, 256
 LEARNING_RATE=0.0001
 MOMENTUM=0.5
 PRINT_FREQ=10
-WORKERS=20
-RESUME='chk000000.pth.tar' #chk000010, model_best
+WORKERS=4
+RESUME='chk000007.pth.tar' #chk000010, model_best
 GPU=0
 NAMEMETHOD='mitosisattgmmnet' # mitosisattgmmnet
 ARCH='ferattentiongmm' #ferattention, ferattentiongmm, ferattentionstn
@@ -25,13 +25,13 @@ SNAPSHOT=10
 IMAGESIZE=64
 KFOLD=0
 NACTOR=10
-EXP_NAME='mitosis_'$NAMEMETHOD'_'$ARCH'_'$LOSS'_'$OPT'_'$NAMEDATASET'_dim'$DIM'_preactresnet18x32_fold'$KFOLD'_mix_003'
+EXP_NAME='mitosis_att_'$NAMEMETHOD'_'$ARCH'_'$LOSS'_'$OPT'_'$NAMEDATASET'_dim'$DIM'_preactresnet18x32_fold'$KFOLD'_mix_001'
 
 
-rm -rf $PROJECT/$EXP_NAME/$EXP_NAME.log
-rm -rf $PROJECT/$EXP_NAME/
-mkdir $PROJECT    
-mkdir $PROJECT/$EXP_NAME  
+# rm -rf $PROJECT/$EXP_NAME/$EXP_NAME.log
+# rm -rf $PROJECT/$EXP_NAME/
+# mkdir $PROJECT    
+# mkdir $PROJECT/$EXP_NAME  
 
 
 python ../train_mitosis.py \

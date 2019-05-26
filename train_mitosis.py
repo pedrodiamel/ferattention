@@ -180,7 +180,7 @@ def main():
         transform_image=get_transforms_det( imsize ),
         )
 
-    train_loader_org = DataLoader(train_data_org, batch_size=250, shuffle=False, 
+    train_loader_org = DataLoader(train_data_org, batch_size=100, shuffle=False, 
         num_workers=args.workers, pin_memory=network.cuda, drop_last=False)
 
 

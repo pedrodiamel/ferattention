@@ -185,6 +185,14 @@ def preactresembnet18( pretrained=False, **kwargs ):
         pass
     return model
 
+def preactresembnet152(pretrained=False, **kwargs):
+    model =  PreActResEmbNet(PreActBottleneck, [3,8,36,3], **kwargs)
+    if pretrained:
+        #model.load_state_dict(model_zoo.load_url(model_urls['resnet18']))
+        pass
+    return model
+
+
 
 class PreActResEmbExNet(nn.Module):
     def __init__(self, block, num_blocks, dim=64, num_classes=1000, num_channels=3, initial_channels=64):
@@ -257,3 +265,10 @@ def preactresembnetex34( pretrained=False, **kwargs ):
         pass
     return model    
 
+
+def preactresembnetex152(pretrained=False, **kwargs):
+    model =  PreActResEmbExNet(PreActBottleneck, [3,8,36,3], **kwargs)
+    if pretrained:
+        #model.load_state_dict(model_zoo.load_url(model_urls['resnet18']))
+        pass
+    return model

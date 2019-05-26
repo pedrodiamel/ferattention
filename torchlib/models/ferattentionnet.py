@@ -9,6 +9,7 @@ import torchvision
 
 from . import preactresnet
 from . import resnet
+from . import inception
 from . import stn
 
 
@@ -290,7 +291,10 @@ class FERAttentionNet(nn.Module):
                         
         #classification and reconstruction
         # TODO March 01, 2019: Select of classification and representation module 
-        self.netclass = preactresnet.preactresnet18( num_classes=num_classes, num_channels=num_channels  )
+        self.netclass = preactresnet.preactresnet18( num_classes=num_classes, num_channels=num_channels )
+        #self.netclass = preactresnet.preactresnet34( num_classes=num_classes, num_channels=num_channels )
+        #self.netclass = preactresnet.preactresnet152( num_classes=num_classes, num_channels=num_channels )
+        #self.netclass = inception.inception_v3( num_classes=num_classes, num_channels=num_channels, transform_input=False, pretrained=True )
         #self.netclass = resnet.resnet18( num_classes=num_classes, num_channels=num_channels )
         
     
@@ -318,22 +322,26 @@ class FERAttentionNet(nn.Module):
         #fusion
         #\sigma(A) * F(I) 
         attmap = torch.mul( F.sigmoid( g_att ) ,  g_ft )   
-        att = self.reconstruction( torch.cat( (attmap, x, g_att) , dim=1 ) )   
+        att = self.reconstruction( torch.cat( ( attmap, x, g_att ) , dim=1 ) )   
         att = F.relu(self.conv2_bn(att))
 
         att_out = att      
-        # if self.training:
-        #     att_out = att          
-        #     if random.random() < 0.50:
-        #         if random.random() < 0.25:
-        #             att_out = x_org
-        #         else: 
-        #             att_out = att
+#         if self.training:
+#             att_out = att          
+#             if random.random() < 0.50:
+#                 att_out = x
+                
+#                 if random.random() < 0.25:
+#                     att_out = x_org
+#                 else: 
+#                     att_out = att
         
         
         #classification
-        att_pool = F.avg_pool2d(att_out, 2) # <- 32x32 source                     
+        att_pool = F.avg_pool2d(att_out, 2) - 0.5  # <- 32x32 source                     
         #att_pool = F.interpolate(att_out, scale_factor=2 ,mode='bilinear', align_corners=False) #256 x2
+        #att_pool = F.interpolate(att_out, size=(299,299) ,mode='bilinear', align_corners=False) #256 x2
+        
         y = self.netclass( att_pool )
 
 #         #ensamble classification

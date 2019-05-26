@@ -5,13 +5,13 @@ DATABACK='~/.datasets/coco'
 DATA='~/.datasets'
 NAMEDATASET='affectnetdark' #affectnetdark, bu3dfedark, ckdark, jaffedark
 PROJECT='../out'
-EPOCHS=1000
+EPOCHS=150
 BATCHSIZE=128 #64, 128, 192, 256
 LEARNING_RATE=0.0001
 MOMENTUM=0.5
 PRINT_FREQ=100
 WORKERS=30
-RESUME='model_best.pth.tar' #chk000010, model_best
+RESUME='chk000120.pth.tar' #chk000010, model_best
 GPU=0
 NAMEMETHOD='attnet' #attnet, attstnnet, attgmmnet, attgmmstnnet
 ARCH='ferattention' #ferattention, ferattentiongmm, ferattentionstn
@@ -22,19 +22,19 @@ NUMCLASS=8 #6, 7, 8
 NUMCHANNELS=3
 DIM=64
 SNAPSHOT=10
-IMAGESIZE=128
+IMAGESIZE=64
 KFOLD=0
 NACTOR=10
-EXP_NAME='att_'$NAMEMETHOD'_'$ARCH'_'$LOSS'_'$OPT'_'$NAMEDATASET'_dim'$DIM'_preactresnet18x64_fold'$KFOLD'_000' #preactresnet18, resnet18
+EXP_NAME='att_'$NAMEMETHOD'_'$ARCH'_'$LOSS'_'$OPT'_'$NAMEDATASET'_dim'$DIM'_preactresnet18x32_fold'$KFOLD'_002' # preactresnet18, resnet18, inception
 
 
-rm -rf $PROJECT/$EXP_NAME/$EXP_NAME.log
-rm -rf $PROJECT/$EXP_NAME/
-mkdir $PROJECT    
-mkdir $PROJECT/$EXP_NAME  
+# rm -rf $PROJECT/$EXP_NAME/$EXP_NAME.log
+# rm -rf $PROJECT/$EXP_NAME/
+# mkdir $PROJECT    
+# mkdir $PROJECT/$EXP_NAME  
 
 
-python ../train.py \
+CUDA_VISIBLE_DEVICES=0,1,2,3  python ../train.py \
 $DATA \
 --databack=$DATABACK \
 --name-dataset=$NAMEDATASET \

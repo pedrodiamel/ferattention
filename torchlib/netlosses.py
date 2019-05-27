@@ -40,7 +40,7 @@ class Attloss(nn.Module):
         #loss_att_back = torch.clamp(loss_att_back, max=30)
         
         #return loss_att + loss_att_face + 2*loss_att_back
-        return 10.0*loss_att
+        return 1.0*loss_att
 
 
 class STNloss(nn.Module):

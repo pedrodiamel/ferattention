@@ -348,9 +348,9 @@ class FERAttentionNet(nn.Module):
 
                     
         return y, att, g_att, g_ft 
- 
+    
 
-
+    
 class FERAttentionGMMNet(nn.Module):
     """FERAttentionGMMNet 
     """

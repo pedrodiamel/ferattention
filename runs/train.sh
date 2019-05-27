@@ -10,7 +10,7 @@ BATCHSIZE=128 #64, 128, 192, 256
 LEARNING_RATE=0.0001
 MOMENTUM=0.5
 PRINT_FREQ=100
-WORKERS=30
+WORKERS=4
 RESUME='model_best.pth.tar' #chk000000, model_best
 GPU=0
 NAMEMETHOD='attnet' # attnet, attstnnet, attgmmnet, attgmmstnnet
@@ -25,13 +25,13 @@ SNAPSHOT=10
 IMAGESIZE=64
 KFOLD=0
 NACTOR=10
-EXP_NAME='att_'$NAMEMETHOD'_'$ARCH'_'$LOSS'_'$OPT'_'$NAMEDATASET'_dim'$DIM'_preactresnet18x32_fold'$KFOLD'_002' # preactresnet18, resnet18, inception
+EXP_NAME='att_'$NAMEMETHOD'_'$ARCH'_'$LOSS'_'$OPT'_'$NAMEDATASET'_dim'$DIM'_preactresnet18x32_fold'$KFOLD'_000' # preactresnet18, resnet18, inception
 
 
-# rm -rf $PROJECT/$EXP_NAME/$EXP_NAME.log
-# rm -rf $PROJECT/$EXP_NAME/
-# mkdir $PROJECT    
-# mkdir $PROJECT/$EXP_NAME  
+rm -rf $PROJECT/$EXP_NAME/$EXP_NAME.log
+rm -rf $PROJECT/$EXP_NAME/
+mkdir $PROJECT    
+mkdir $PROJECT/$EXP_NAME  
 
 
 CUDA_VISIBLE_DEVICES=0,1,2,3  python ../train.py \

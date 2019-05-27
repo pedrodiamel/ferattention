@@ -48,8 +48,11 @@ def ferattentionstn(pretrained=False, **kwargs):
     return model
 
 
-
-
+def norm(x):
+    x[:, 0] = x[:, 0] * (0.229 / 0.5) + (0.485 - 0.5) / 0.5
+    x[:, 1] = x[:, 1] * (0.224 / 0.5) + (0.456 - 0.5) / 0.5
+    x[:, 2] = x[:, 2] * (0.225 / 0.5) + (0.406 - 0.5) / 0.5
+    return x
 
 def conv3x3(_in, _out):
     return nn.Conv2d(_in, _out, kernel_size=3, stride=1, padding=1)
@@ -338,7 +341,9 @@ class FERAttentionNet(nn.Module):
         
         
         #classification
-        att_pool = F.avg_pool2d(att_out, 2) - 0.5  # <- 32x32 source                     
+        att_pool = F.avg_pool2d(att_out, 2)  # <- 32x32 source        
+        att_pool = norm(att_pool)
+        
         #att_pool = F.interpolate(att_out, scale_factor=2 ,mode='bilinear', align_corners=False) #256 x2
         #att_pool = F.interpolate(att_out, size=(299,299) ,mode='bilinear', align_corners=False) #256 x2
         
@@ -448,7 +453,9 @@ class FERAttentionGMMNet(nn.Module):
         
         
         #classification
-        att_pool = F.avg_pool2d(att_out, 2) # <- 32x32 source                     
+        att_pool = F.avg_pool2d(att_out, 2) # <- 32x32 source    
+        att_pool = norm(att_pool)
+        
         z, y = self.netclass( att_pool )
   
 

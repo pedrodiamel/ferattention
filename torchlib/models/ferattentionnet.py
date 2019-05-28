@@ -48,8 +48,12 @@ def ferattentionstn(pretrained=False, **kwargs):
     return model
 
 
-
-
+def norm(x):
+    x_ch0 = torch.unsqueeze(x[:, 0], 1) * (0.229 / 0.5) + (0.485 - 0.5) / 0.5
+    x_ch1 = torch.unsqueeze(x[:, 1], 1) * (0.224 / 0.5) + (0.456 - 0.5) / 0.5
+    x_ch2 = torch.unsqueeze(x[:, 2], 1) * (0.225 / 0.5) + (0.406 - 0.5) / 0.5
+    x = torch.cat((x_ch0, x_ch1, x_ch2), 1)
+    return x
 
 def conv3x3(_in, _out):
     return nn.Conv2d(_in, _out, kernel_size=3, stride=1, padding=1)
@@ -338,7 +342,9 @@ class FERAttentionNet(nn.Module):
         
         
         #classification
-        att_pool = F.avg_pool2d(att_out, 2) - 0.5  # <- 32x32 source                     
+        att_pool = F.avg_pool2d(att_out, 2)  # <- 32x32 source        
+        #att_pool = norm(att_pool)
+
         #att_pool = F.interpolate(att_out, scale_factor=2 ,mode='bilinear', align_corners=False) #256 x2
         #att_pool = F.interpolate(att_out, size=(299,299) ,mode='bilinear', align_corners=False) #256 x2
         
@@ -356,9 +362,9 @@ class FERAttentionNet(nn.Module):
 
                     
         return y, att, g_att, g_ft 
- 
+    
 
-
+    
 class FERAttentionGMMNet(nn.Module):
     """FERAttentionGMMNet 
     """
@@ -448,7 +454,9 @@ class FERAttentionGMMNet(nn.Module):
         
         
         #classification
-        att_pool = F.avg_pool2d(att_out, 2) # <- 32x32 source                     
+        att_pool = F.avg_pool2d(att_out, 2) # <- 32x32 source    
+        att_pool = norm(att_pool)
+        
         z, y = self.netclass( att_pool )
   
 

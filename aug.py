@@ -62,6 +62,7 @@ def get_transforms_aug( size_input ):
         
         
         #------------------------------------------------------------------
+        mtrans.ToGrayscale(),
         mtrans.ToTensor(),
         normalize,
         
@@ -73,7 +74,7 @@ def get_transforms_det(size_input):
     return transforms.Compose([
         mtrans.ToResize( (size_input, size_input), resize_mode='squash', padding_mode=cv2.BORDER_REPLICATE ) ,
         #mtrans.ToResize( (size_input, size_input), resize_mode='square', padding_mode=cv2.BORDER_REPLICATE ) ,
-        #mtrans.ToGrayscale(),
+        mtrans.ToGrayscale(),
         mtrans.ToTensor(),
         normalize,
         ])

@@ -48,7 +48,7 @@ def ferattentionstn(pretrained=False, **kwargs):
     return model
 
 
-def norm(x):
+def normalize_layer(x):
     x_ch0 = torch.unsqueeze(x[:, 0], 1) * (0.229 / 0.5) + (0.485 - 0.5) / 0.5
     x_ch1 = torch.unsqueeze(x[:, 1], 1) * (0.224 / 0.5) + (0.456 - 0.5) / 0.5
     x_ch2 = torch.unsqueeze(x[:, 2], 1) * (0.225 / 0.5) + (0.406 - 0.5) / 0.5
@@ -328,8 +328,8 @@ class FERAttentionNet(nn.Module):
         attmap = torch.mul( F.sigmoid( g_att ) ,  g_ft )   
         att = self.reconstruction( torch.cat( ( attmap, x, g_att ) , dim=1 ) )   
         att = F.relu(self.conv2_bn(att))
-
-        att_out = att      
+        att_out = normalize_layer(att) 
+        
 #         if self.training:
 #             att_out = att          
 #             if random.random() < 0.50:

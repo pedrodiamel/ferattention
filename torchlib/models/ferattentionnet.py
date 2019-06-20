@@ -49,11 +49,12 @@ def ferattentionstn(pretrained=False, **kwargs):
 
 
 def normalize_layer(x):
-    x_ch0 = torch.unsqueeze(x[:, 0], 1) * (0.229 / 0.5) + (0.485 - 0.5) / 0.5
-    x_ch1 = torch.unsqueeze(x[:, 1], 1) * (0.224 / 0.5) + (0.456 - 0.5) / 0.5
-    x_ch2 = torch.unsqueeze(x[:, 2], 1) * (0.225 / 0.5) + (0.406 - 0.5) / 0.5
+    x_ch0 = torch.unsqueeze(x[:, 0], 1) * (0.2023 / 0.5) + (0.4914 - 0.5) / 0.5
+    x_ch1 = torch.unsqueeze(x[:, 1], 1) * (0.1994 / 0.5) + (0.4822 - 0.5) / 0.5
+    x_ch2 = torch.unsqueeze(x[:, 2], 1) * (0.2010 / 0.5) + (0.4465 - 0.5) / 0.5
     x = torch.cat((x_ch0, x_ch1, x_ch2), 1)
     return x
+
 
 def conv3x3(_in, _out):
     return nn.Conv2d(_in, _out, kernel_size=3, stride=1, padding=1)
@@ -328,7 +329,10 @@ class FERAttentionNet(nn.Module):
         attmap = torch.mul( F.sigmoid( g_att ) ,  g_ft )   
         att = self.reconstruction( torch.cat( ( attmap, x, g_att ) , dim=1 ) )   
         att = F.relu(self.conv2_bn(att))
-        att_out = normalize_layer(att) 
+        att_out = normalize_layer(att)
+        
+        #att = normalize_layer(att)
+        #att_out = att
         
 #         if self.training:
 #             att_out = att          
@@ -344,6 +348,7 @@ class FERAttentionNet(nn.Module):
         #classification
         att_pool = F.avg_pool2d(att_out, 2)  # <- 32x32 source        
         #att_pool = norm(att_pool)
+        #att_pool = att_out
 
         #att_pool = F.interpolate(att_out, scale_factor=2 ,mode='bilinear', align_corners=False) #256 x2
         #att_pool = F.interpolate(att_out, size=(299,299) ,mode='bilinear', align_corners=False) #256 x2

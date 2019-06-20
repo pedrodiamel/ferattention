@@ -11,10 +11,10 @@ from pytvision.transforms import transforms as mtrans
 #    )
 
 # cifar10
-# normalize = mtrans.ToMeanNormalization(
-#     mean = (0.4914, 0.4822, 0.4465), #[x / 255 for x in [125.3, 123.0, 113.9]],
-#     std  = (0.2023, 0.1994, 0.2010), #[x / 255 for x in [63.0, 62.1, 66.7]],
-#     )
+normalize = mtrans.ToMeanNormalization(
+    mean = (0.4914, 0.4822, 0.4465), #[x / 255 for x in [125.3, 123.0, 113.9]],
+    std  = (0.2023, 0.1994, 0.2010), #[x / 255 for x in [63.0, 62.1, 66.7]],
+    )
 
 # cifar100
 #normalize = mtrans.ToMeanNormalization(
@@ -33,7 +33,7 @@ from pytvision.transforms import transforms as mtrans
 #    mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5],
 #    )
 
-normalize = mtrans.ToNormalization()
+# normalize = mtrans.ToNormalization()
 
 def get_transforms_aug( size_input ):
     return transforms.Compose([        

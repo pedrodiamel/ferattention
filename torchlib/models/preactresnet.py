@@ -75,9 +75,6 @@ class PreActResNet(nn.Module):
         self.layer3 = self._make_layer(block, initial_channels*4, num_blocks[2], stride=2)
         self.layer4 = self._make_layer(block, initial_channels*8, num_blocks[3], stride=2)
         self.linear = nn.Linear(initial_channels*8*block.expansion, num_classes)
-        
-        
-        
 
     def _make_layer(self, block, planes, num_blocks, stride):
         strides = [stride] + [1]*(num_blocks-1)
@@ -145,20 +142,19 @@ def preactresnet152(pretrained=False, **kwargs):
 class PreActResEmbNet(nn.Module):
     def __init__(self, block, num_blocks,  dim=64, num_channels=3, initial_channels=64):
         super(PreActResEmbNet, self).__init__()
-        self.in_planes = initial_channels
-        self.dim = dim
+        self.in_planes=initial_channels
+        self.dim=dim
         self.num_channels=num_channels
         self.size_input=32 
         self.conv_dim_out = initial_channels*8*block.expansion #ex: 64*8*4
-
+        
         self.conv1 = nn.Conv2d(num_channels, initial_channels, kernel_size=3, stride=1, padding=1, bias=False)
         self.layer1 = self._make_layer(block, initial_channels, num_blocks[0], stride=1)
         self.layer2 = self._make_layer(block, initial_channels*2, num_blocks[1], stride=2)
         self.layer3 = self._make_layer(block, initial_channels*4, num_blocks[2], stride=2)
         self.layer4 = self._make_layer(block, initial_channels*8, num_blocks[3], stride=2)
         self.linear = nn.Linear(self.conv_dim_out , dim)
-        
-
+    
     def _make_layer(self, block, planes, num_blocks, stride):
         strides = [stride] + [1]*(num_blocks-1)
         layers = []

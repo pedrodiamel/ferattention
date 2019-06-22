@@ -26,7 +26,6 @@ IMAGESIZE=64
 KFOLD=0
 NACTOR=10
 EXP_NAME='att_'$NAMEMETHOD'_'$ARCH'_'$LOSS'_'$OPT'_'$NAMEDATASET'_dim'$DIM'_preactresnet18x32_fold'$KFOLD'_000' # preactresnet18, resnet18, inception
-
 # att_attnet_ferattention_attloss_adam_ckdark_dim64_preactresnet18x32_fold0_000
 
 rm -rf $PROJECT/$EXP_NAME/$EXP_NAME.log

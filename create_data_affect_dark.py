@@ -158,7 +158,7 @@ def create_dataset():
             if not os.path.exists( newpath ):
                 os.makedirs(newpath)
                 
-            cv2.imwrite( os.path.join(newpath,  '{}.png'.format( name.split('.')[0])  ), image_mask )
+            cv2.imwrite( os.path.join(newpath, '{}.png'.format( name.split('.')[0])  ), image_mask )
             #scipy.misc.imsave( os.path.join(newpath, name), image_mask  ) #name , '{}.png'.format( name.split('.')[0]))
             
                         

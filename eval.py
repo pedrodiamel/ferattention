@@ -17,7 +17,7 @@ from torchvision import transforms, utils
 from pytvision.transforms.aumentation import  ObjectImageMetadataTransform
 from pytvision.transforms import transforms as mtrans
 
-sys.path.append('../')
+#sys.path.append('../')
 from torchlib.transforms import functional as F
 from torchlib.datasets.fersynthetic  import SyntheticFaceDataset
 from torchlib.datasets.factory  import FactoryDataset

@@ -308,7 +308,7 @@ class DGMMLoss(nn.Module):
         mix (bool): mixup
     """
     
-    def __init__(self, classes=10, sigma=1.0, cuda=False, mix=True, knn=False  ):
+    def __init__(self, classes=10, sigma=0.5, cuda=False, mix=True, knn=False  ):
         super(DGMMLoss, self).__init__()
         self.classes = classes
         self.sigma   = sigma 

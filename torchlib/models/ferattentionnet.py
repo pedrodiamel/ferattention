@@ -296,11 +296,11 @@ class FERAttentionNet(nn.Module):
                         
         #classification and reconstruction
         # TODO March 01, 2019: Select of classification and representation module 
-        self.netclass = preactresnet.preactresnet18( num_classes=num_classes, num_channels=num_channels )
+        #self.netclass = preactresnet.preactresnet18( num_classes=num_classes, num_channels=num_channels )
         #self.netclass = preactresnet.preactresnet34( num_classes=num_classes, num_channels=num_channels )
         #self.netclass = preactresnet.preactresnet152( num_classes=num_classes, num_channels=num_channels )
         #self.netclass = inception.inception_v3( num_classes=num_classes, num_channels=num_channels, transform_input=False, pretrained=True )
-        #self.netclass = resnet.resnet18( num_classes=num_classes, num_channels=num_channels )
+        self.netclass = resnet.resnet18( num_classes=num_classes, num_channels=num_channels )
         
     
     
@@ -352,7 +352,8 @@ class FERAttentionNet(nn.Module):
 
         #att_pool = F.interpolate(att_out, scale_factor=2 ,mode='bilinear', align_corners=False) #256 x2
         #att_pool = F.interpolate(att_out, size=(299,299) ,mode='bilinear', align_corners=False) #256 x2
-        
+        att_pool = F.interpolate(att_out, size=(224,224) ,mode='bilinear', align_corners=False)
+                
         y = self.netclass( att_pool )
 
 #         #ensamble classification

@@ -82,8 +82,11 @@ class AttentionNeuralNetAbstract(NeuralNetAbstract):
             -pretrained (bool)
         """
         
+        
         cfg_opt={ 'momentum':momentum, 'weight_decay':weight_decay } 
-        cfg_scheduler={ 'step_size':100, 'gamma':0.1  }        
+        #cfg_scheduler={ 'step_size':100, 'gamma':0.1  } 
+        cfg_scheduler={ 'mode':'min', 'patience':10  } 
+        
         self.num_classes = num_classes
         
         super(AttentionNeuralNetAbstract, self).create( 
@@ -228,6 +231,8 @@ class AttentionNeuralNetAbstract(NeuralNetAbstract):
             else:
                 print("=> no checkpoint found at '{}'".format(pathnamemodel))        
         return bload            
+
+    
 
 class AttentionNeuralNet(AttentionNeuralNetAbstract):
     """
@@ -482,6 +487,9 @@ class AttentionNeuralNet(AttentionNeuralNetAbstract):
             assert(False)
 
         self.s_loss = loss
+        
+        
+
 
 class AttentionSTNNeuralNet(AttentionNeuralNet):
     """
@@ -688,8 +696,8 @@ class AttentionSTNNeuralNet(AttentionNeuralNet):
             att   = att[0,:,:,:].permute( 1,2,0 ).mean(dim=2)
             att_t = att_t[0,:,:,:].permute( 1,2,0 ).mean(dim=2)
             srf   = srf[0,:,:,:].permute( 1,2,0 ).sum(dim=2)  
-            fmap  = fmap[0,:,:,:].permute( 1,2,0 ) 
-            
+            fmap  = fmap[0,:,:,:].permute( 1,2,0 ).mean(dim=2)  
+                        
             print('theta')
             print(y_theta[0,:,:] )
             print(theta[0,:,:] )
@@ -750,6 +758,10 @@ class AttentionSTNNeuralNet(AttentionNeuralNet):
             assert(False)
 
         self.s_loss = loss
+
+
+        
+        
 
 class AttentionGMMNeuralNet(AttentionNeuralNetAbstract):
     """
@@ -842,7 +854,7 @@ class AttentionGMMNeuralNet(AttentionNeuralNetAbstract):
             batch_size = x_img.shape[0]
             
             y_lab = meta[:,0]
-            y_theta   = meta[:,1:].view(-1, 2, 3)            
+            y_theta = meta[:,1:].view(-1, 2, 3)            
 
             if self.cuda:
                 x_org   = x_org.cuda()
@@ -858,7 +870,8 @@ class AttentionGMMNeuralNet(AttentionNeuralNetAbstract):
             loss_bce  = self.criterion_bce(  y_lab_hat, y_lab.long() )
             loss_gmm  = self.criterion_gmm(  z, y_lab )              
             loss_att  = self.criterion_att(  x_org, y_mask, att )            
-            loss      = loss_bce + loss_gmm + loss_att           
+            loss      = loss_bce + loss_gmm  + loss_att + + 0.0*z.norm(2)         
+            
             topk      = self.topk( y_lab_hat, y_lab.long() )
             gmm       = self.gmm( z, y_lab )            
             
@@ -914,7 +927,8 @@ class AttentionGMMNeuralNet(AttentionNeuralNetAbstract):
                 loss_bce  = self.criterion_bce( y_lab_hat, y_lab.long() )
                 loss_gmm  = self.criterion_gmm( z, y_lab )
                 loss_att  = self.criterion_att( x_org, y_mask, att  )
-                loss      = loss_bce + loss_gmm + loss_att           
+                loss      = loss_bce + loss_gmm + loss_att + 0.0*z.norm(2) 
+                
                 topk      = self.topk( y_lab_hat, y_lab.long() )               
                 gmm       = self.gmm( z, y_lab )
                                 
@@ -1126,7 +1140,7 @@ class AttentionGMMSTNNeuralNet(AttentionNeuralNetAbstract):
             loss_gmm  = self.criterion_gmm(  z, y_lab )              
             loss_att  = self.criterion_att( x_org, y_mask, att )
             loss_stn  = self.criterion_stn( x_org, y_theta, theta )            
-            loss      = loss_bce + loss_gmm + loss_att + loss_stn          
+            loss      = loss_bce + loss_gmm + loss_att + loss_stn + 0.0001*z.norm(2)         
             topk      = self.topk( y_lab_hat, y_lab.long() )
             gmm       = self.gmm( z, y_lab )            
             
@@ -1190,7 +1204,7 @@ class AttentionGMMSTNNeuralNet(AttentionNeuralNetAbstract):
                 loss_gmm  = self.criterion_gmm(  z, y_lab )
                 loss_att  = self.criterion_att( x_org, y_mask, att )
                 loss_stn  = self.criterion_stn( x_org, y_theta, theta ) 
-                loss      = loss_bce + loss_gmm + loss_att + loss_stn          
+                loss      = loss_bce + loss_gmm + loss_att + loss_stn + 0.0001*z.norm(2)         
                 topk      = self.topk( y_lab_hat, y_lab.long() )               
                 gmm       = self.gmm( z, y_lab )
                                 
@@ -1416,7 +1430,7 @@ class MitosisAttentionGMMNeuralNet(AttentionNeuralNetAbstract):
             loss_bce  = self.criterion_bce(  y_lab_hat, y_lab.long() )
             loss_gmm  = self.criterion_gmm( z, y_reg, data_loader.dataset.numclass_reg  )
             loss_att  = self.criterion_att(  x_org, y_mask, att )            
-            loss      = loss_bce + loss_gmm + loss_att           
+            loss      = loss_bce + loss_gmm + loss_att + 0.0001*z.norm(2)          
             topk      = self.topk( y_lab_hat, y_lab.long() )
             gmm       = self.gmm( z, y_lab, data_loader.dataset.numclass_reg )            
             
@@ -1474,7 +1488,7 @@ class MitosisAttentionGMMNeuralNet(AttentionNeuralNetAbstract):
                 loss_bce  = self.criterion_bce( y_lab_hat, y_lab.long() )
                 loss_gmm  = self.criterion_gmm( z, y_reg, data_loader.dataset.numclass_reg )
                 loss_att  = self.criterion_att( x_org, y_mask, att  )
-                loss      = loss_bce + loss_gmm + loss_att           
+                loss      = loss_bce + loss_gmm + loss_att + 0.0001*z.norm(2)          
                 topk      = self.topk( y_lab_hat, y_lab.long() )               
                 gmm       = self.gmm( z, y_lab, data_loader.dataset.numclass_reg )
                                 
@@ -1585,6 +1599,10 @@ class MitosisAttentionGMMNeuralNet(AttentionNeuralNetAbstract):
         self.s_loss = loss
 
         
+        
+        
+        
+
         
 class MitosisAttentionGMMAccumulationNeuralNet(MitosisAttentionGMMNeuralNet): 
     """

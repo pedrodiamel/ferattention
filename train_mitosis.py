@@ -4,6 +4,7 @@ import cv2
 import numpy as np
 
 from sklearn.cluster import KMeans
+from sklearn.mixture import  GaussianMixture
 
 import torch
 from torch.utils.data import Dataset, DataLoader
@@ -174,9 +175,10 @@ def main():
         ext='jpg',
         #count=10000, #10000
         num_channels=num_channels,
+        #iluminate=False, angle=0, translation=0.0, warp=0.0, factor=0.0,
         iluminate=True, angle=30, translation=0.2, warp=0.1, factor=0.2, 
         #iluminate=True, angle=45, translation=0.3, warp=0.2, factor=0.2,         
-        transform_data=get_transforms_aug( imsize ),
+        transform_data=get_transforms_det( imsize ),
         transform_image=get_transforms_det( imsize ),
         )
 
@@ -198,7 +200,7 @@ def main():
             ),
         pathnameback=args.databack, 
         ext='jpg',
-        count=64000, #100000, (512/8) * 10000
+        count=288000,
         num_channels=num_channels,
         iluminate=True, angle=30, translation=0.2, warp=0.1, factor=0.2,
         #iluminate=True, angle=45, translation=0.3, warp=0.2, factor=0.2,
@@ -231,9 +233,9 @@ def main():
             ),
         pathnameback=args.databack, 
         ext='jpg',
-        count=6400, #10000
+        count=28800,
         num_channels=num_channels,
-        iluminate=True, angle=30, translation=0.2, warp=0.1, factor=0.2, 
+        iluminate=True, angle=10, translation=0.1, warp=0.1, factor=0.2, 
         #iluminate=True, angle=45, translation=0.3, warp=0.2, factor=0.2,         
         transform_data=get_transforms_aug( imsize ),
         transform_image=get_transforms_det( imsize ),
@@ -250,10 +252,12 @@ def main():
     # network.fit( train_loader, val_loader, args.epochs, args.snapshot )
     
     n_clusters=2
-    max_clusters=3
-    division = 100
+    max_clusters=4
+    division = 20
     #network.start_epoch = 0
     current_epochs = network.start_epoch + args.epochs
+    print(current_epochs)
+    
     for d in range(division):
                         
         # training neural net
@@ -287,24 +291,24 @@ def main():
             if len(index) == 0:
                 print('Error: class not elements ')
                 assert(False)
+
             
-#             if len( index ) < 100:
-#                 print('Not mitosis, number the element is: {} ... '.format(len( index )))
-#                 label_reg[index] = k; k+=1
-#                 continue
+            nc = min( len(index)//10, n_clusters )   
+            if len(index) < 100:
+                label_reg[index] = k
+                k+=1
                         
-            y_reg = KMeans( n_clusters=n_clusters, random_state=0, max_iter=3000, tol=1e-3,  n_init=1 ).fit_predict( Z[index,...] )
+            
+            #y_reg = KMeans( n_clusters=nc, random_state=0, max_iter=3000, tol=1e-3,  n_init=1 ).fit_predict( Z[index,...] )
+            y_reg = GaussianMixture(n_components=nc, covariance_type='full').fit_predict( Z[index,...] )
+            
             cls, frc = np.unique(y_reg, return_counts=True)
             print('frecuence: {} '.format(frc) )
-            
-#             if np.min(frc) < 50:
-#                 print('Not mitosis ... ')
-#                 label_reg[index] = k; k+=1
-#                 continue
-                
+                            
                         
             label_reg[index] = y_reg + k
-            k+=2       
+            k+=nc       
+        
         
         #train_loader = DataLoader(
         #    train_data, 

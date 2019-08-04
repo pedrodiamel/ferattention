@@ -16,7 +16,7 @@ class Attloss(nn.Module):
         loss_att = (d-1)/(d+1)
         loss_att = ( loss_att ).mean()        
         loss_att = torch.clamp(loss_att, max=30)    
-        return 2.0*loss_att
+        return 5.0*loss_att
 
 
 class STNloss(nn.Module):

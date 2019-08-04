@@ -11,10 +11,10 @@ from pytvision.transforms import transforms as mtrans
 #    )
 
 # cifar10
-normalize = mtrans.ToMeanNormalization(
-    mean = (0.4914, 0.4822, 0.4465), #[x / 255 for x in [125.3, 123.0, 113.9]],
-    std  = (0.2023, 0.1994, 0.2010), #[x / 255 for x in [63.0, 62.1, 66.7]],
-    )
+# normalize = mtrans.ToMeanNormalization(
+#     mean = (0.4914, 0.4822, 0.4465), #[x / 255 for x in [125.3, 123.0, 113.9]],
+#     std  = (0.2023, 0.1994, 0.2010), #[x / 255 for x in [63.0, 62.1, 66.7]],
+#     )
 
 # cifar100
 #normalize = mtrans.ToMeanNormalization(
@@ -33,33 +33,27 @@ normalize = mtrans.ToMeanNormalization(
 #    mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5],
 #    )
 
-# normalize = mtrans.ToNormalization()
+normalize = mtrans.ToNormalization()
 
 def get_transforms_aug( size_input ):
     return transforms.Compose([        
         
         #------------------------------------------------------------------
-        #Resize 
-        mtrans.ToResize( (size_input,size_input), resize_mode='square', padding_mode=cv2.BORDER_REPLICATE),  
+        #Resize input
+        mtrans.ToResize( (48,48 ), resize_mode='square', padding_mode=cv2.BORDER_REFLECT),  
         
         #------------------------------------------------------------------
-        #Colors           
-        mtrans.ToRandomTransform( mtrans.RandomBrightness( factor=0.25 ), prob=0.750 ),
-        mtrans.ToRandomTransform( mtrans.RandomContrast( factor=0.25 ), prob=0.750 ),
-        mtrans.ToRandomTransform( mtrans.RandomGamma( factor=0.25 ), prob=0.750 ),
-        mtrans.ToRandomTransform( mtrans.RandomRGBPermutation(), prob=0.50 ),
+        #Colors
+        #mtrans.ToRandomTransform( mtrans.RandomBrightness( factor=0.25 ), prob=0.50 ),
+        #mtrans.ToRandomTransform( mtrans.RandomContrast( factor=0.25 ), prob=0.50 ),
+        #mtrans.ToRandomTransform( mtrans.RandomGamma( factor=0.25 ), prob=0.50 ),
+        #mtrans.ToRandomTransform( mtrans.RandomRGBPermutation(), prob=0.50 ),
         mtrans.ToRandomTransform( mtrans.CLAHE(), prob=0.25 ),
-        mtrans.ToRandomTransform(mtrans.ToGaussianBlur( sigma=0.05 ), prob=0.25 ),
-#         mtrans.ToRandomTransform(mtrans.ToGaussianNoise( sigma=0.05 ), prob=0.25 ),
-        
-        
-#         mtrans.ToRandomTransform( mtrans.RandomBrightness( factor=0.25 ), prob=0.50 ), 
-#         mtrans.ToRandomTransform( mtrans.RandomContrast( factor=0.25 ), prob=0.50 ), 
-#         mtrans.ToRandomTransform( mtrans.RandomGamma( factor=0.25 ), prob=0.50 ), 
-#         mtrans.ToRandomTransform( mtrans.RandomRGBPermutation(), prob=0.50 ), 
-#         mtrans.ToRandomTransform( mtrans.CLAHE(), prob=0.25 ), 
-#         mtrans.ToRandomTransform( mtrans.ToGaussianBlur( sigma=0.05 ), prob=0.25 ), 
-        
+        mtrans.ToRandomTransform( mtrans.ToGaussianBlur( sigma=0.005 ), prob=0.25 ),
+                
+        #------------------------------------------------------------------
+        #Resize 
+        mtrans.ToResize( (size_input,size_input), resize_mode='square', padding_mode=cv2.BORDER_REFLECT),  
         
         #------------------------------------------------------------------
         mtrans.ToGrayscale(),
@@ -72,8 +66,7 @@ def get_transforms_aug( size_input ):
 
 def get_transforms_det(size_input):    
     return transforms.Compose([
-        mtrans.ToResize( (size_input, size_input), resize_mode='squash', padding_mode=cv2.BORDER_REPLICATE ) ,
-        #mtrans.ToResize( (size_input, size_input), resize_mode='square', padding_mode=cv2.BORDER_REPLICATE ) ,
+        mtrans.ToResize( (size_input, size_input), resize_mode='squash', padding_mode=cv2.BORDER_REFLECT ) ,
         mtrans.ToGrayscale(),
         mtrans.ToTensor(),
         normalize,

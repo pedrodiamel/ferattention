@@ -5,19 +5,19 @@ DATABACK='~/.datasets/coco'
 DATA='~/.datasets'
 NAMEDATASET='affectnetdark' #affectnetdark, ckdark, bu3dfedark, jaffedark
 PROJECT='../out/attnet'
-EPOCHS=150
-BATCHSIZE=128 #64, 128, 192, 256
+EPOCHS=500
+BATCHSIZE=256 #64, 128, 192, 256
 LEARNING_RATE=0.0001
 MOMENTUM=0.5
 PRINT_FREQ=100
-WORKERS=20
-RESUME='model_best.pth.tar' #chk000000, model_best
+WORKERS=10
+RESUME='chk000000.pth.tar' #chk000000, model_best
 GPU=0
-NAMEMETHOD='attnet' # attnet, attstnnet, attgmmnet, attgmmstnnet
-ARCH='ferattention' # ferattention, ferattentiongmm, ferattentionstn
+NAMEMETHOD='attstnnet' # attnet, attstnnet, attgmmnet, attgmmstnnet
+ARCH='ferattentionstn' # ferattention, ferattentionstn, ferattentiongmm, ferattentiongmmstn
 LOSS='attloss'
 OPT='adam'
-SCHEDULER='fixed'
+SCHEDULER='plateau' #step, plateau
 NUMCLASS=8 #6, 7, 8
 NUMCHANNELS=3
 DIM=64
@@ -25,7 +25,7 @@ SNAPSHOT=10
 IMAGESIZE=64
 KFOLD=0
 NACTOR=10
-EXP_NAME='att_'$NAMEMETHOD'_'$ARCH'_'$LOSS'_'$OPT'_'$NAMEDATASET'_dim'$DIM'_resnet18x32_fold'$KFOLD'_000' # preactresnet18, resnet18
+EXP_NAME='att_'$NAMEMETHOD'_'$ARCH'_'$LOSS'_'$OPT'_'$NAMEDATASET'_dim'$DIM'_resnet18x32_fold'$KFOLD'_mixup_retrain_000' # preactresnet18, resnet18, cvgg13
 
 rm -rf $PROJECT/$EXP_NAME/$EXP_NAME.log
 rm -rf $PROJECT/$EXP_NAME/
@@ -33,7 +33,7 @@ mkdir $PROJECT
 mkdir $PROJECT/$EXP_NAME  
 
 #0,1,2,3
-CUDA_VISIBLE_DEVICES=0,1  python ../train.py \
+CUDA_VISIBLE_DEVICES=2,3  python ../train.py \
 $DATA \
 --databack=$DATABACK \
 --name-dataset=$NAMEDATASET \

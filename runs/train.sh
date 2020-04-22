@@ -6,7 +6,7 @@ DATA='~/.datasets'
 NAMEDATASET='affectnetdark' #affectnetdark, ckdark, bu3dfedark, jaffedark
 PROJECT='../out/attnet'
 EPOCHS=500
-BATCHSIZE=256 #64, 128, 192, 256
+BATCHSIZE=64 #64, 128, 192, 256
 LEARNING_RATE=0.0001
 MOMENTUM=0.5
 PRINT_FREQ=100
@@ -29,8 +29,8 @@ EXP_NAME='att_'$NAMEMETHOD'_'$ARCH'_'$LOSS'_'$OPT'_'$NAMEDATASET'_dim'$DIM'_resn
 
 rm -rf $PROJECT/$EXP_NAME/$EXP_NAME.log
 rm -rf $PROJECT/$EXP_NAME/
-mkdir $PROJECT    
-mkdir $PROJECT/$EXP_NAME  
+mkdir $PROJECT
+mkdir $PROJECT/$EXP_NAME
 
 #0,1,2,3
 CUDA_VISIBLE_DEVICES=2,3  python ../train.py \
@@ -59,7 +59,7 @@ $DATA \
 --scheduler=$SCHEDULER \
 --name-method=$NAMEMETHOD \
 --arch=$ARCH \
---parallel \
 --finetuning \
 2>&1 | tee -a $PROJECT/$EXP_NAME/$EXP_NAME.log \
 
+#--parallel \

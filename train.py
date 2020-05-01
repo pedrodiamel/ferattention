@@ -23,11 +23,11 @@ from aug import get_transforms_aug, get_transforms_det
 
 
 def arg_parser():
-    """Arg parser"""    
+    """Arg parser"""
     parser = ArgumentParser()
-    parser.add_argument('data', metavar='DIR', 
+    parser.add_argument('data', metavar='DIR',
                         help='path to dataset')
-    parser.add_argument('--databack', metavar='DIR', 
+    parser.add_argument('--databack', metavar='DIR',
                         help='path to background dataset')
     parser.add_argument('--no-cuda', action='store_true', default=False,
                         help='enables CUDA training')
@@ -39,15 +39,15 @@ def arg_parser():
                         help='number of data loading workers (default: 1)')
     parser.add_argument('--epochs', default=90, type=int, metavar='N',
                         help='number of total epochs to run')
-    
+
     parser.add_argument('--kfold', default=0, type=int, metavar='N',
                         help='k fold')
     parser.add_argument('--nactor', default=0, type=int, metavar='N',
-                        help='number of the actores')    
-    
+                        help='number of the actores')
+
     parser.add_argument('--start-epoch', default=0, type=int, metavar='N',
                         help='manual epoch number (useful on restarts)')
-    parser.add_argument('-b', '--batch-size', default=256, type=int, metavar='N', 
+    parser.add_argument('-b', '--batch-size', default=256, type=int, metavar='N',
                         help='mini-batch size (default: 256)')
     parser.add_argument('--lr', '--learning-rate', default=0.0001, type=float, metavar='LR',
                         help='initial learning rate')
@@ -72,8 +72,8 @@ def arg_parser():
     parser.add_argument('--opt', default='adam', type=str,
                         help='optimize function')
     parser.add_argument('--scheduler', default='fixed', type=str,
-                        help='scheduler function for learning rate')    
-    
+                        help='scheduler function for learning rate')
+
     parser.add_argument('--image-size', default=388, type=int, metavar='N',
                         help='image size')
     parser.add_argument('--channels', default=1, type=int, metavar='N',
@@ -81,12 +81,12 @@ def arg_parser():
     parser.add_argument('--dim', default=64, type=int, metavar='N',
                         help='code size (default: 64)')
     parser.add_argument('--num-classes', '-c', default=10, type=int, metavar='N',
-                        help='num classes (default: 10)')    
+                        help='num classes (default: 10)')
     parser.add_argument('--name-dataset', default='mnist', type=str,
-                        help='name dataset')    
+                        help='name dataset')
 
     parser.add_argument('--name-method', default='attnet', type=str,
-                        help='name method')  
+                        help='name method')
 
     parser.add_argument('--parallel', action='store_true', default=False,
                     help='Parallel')
@@ -95,7 +95,7 @@ def arg_parser():
 
 
 def main():
-    
+
     # parameters
     parser = arg_parser()
     args = parser.parse_args()
@@ -108,9 +108,9 @@ def main():
 
     fname = args.name_method
     fnet = {
-        'attnet':AttentionNeuralNet, 
-        'attstnnet':AttentionSTNNeuralNet, 
-        'attgmmnet':AttentionGMMNeuralNet, 
+        'attnet':AttentionNeuralNet,
+        'attstnnet':AttentionSTNNeuralNet,
+        'attgmmnet':AttentionGMMNeuralNet,
         'attgmmstnnet':AttentionGMMSTNNeuralNet
         }
 
@@ -124,13 +124,13 @@ def main():
         gpu=args.gpu,
         view_freq=view_freq,
         )
-        
-    network.create( 
-        arch=args.arch, 
-        num_output_channels=dim, 
+
+    network.create(
+        arch=args.arch,
+        num_output_channels=dim,
         num_input_channels=num_channels,
-        loss=args.loss, 
-        lr=args.lr, 
+        loss=args.loss,
+        lr=args.lr,
         momentum=args.momentum,
         optimizer=args.opt,
         lrsch=args.scheduler,
@@ -138,11 +138,11 @@ def main():
         size_input=imsize,
         num_classes=num_classes
         )
-    
+
     # resume
     network.resume( os.path.join(network.pathmodels, args.resume ) )
     cudnn.benchmark = True
-    
+
     kfold=args.kfold
     nactores=args.nactor
     idenselect = np.arange(nactores) + kfold*nactores
@@ -152,13 +152,13 @@ def main():
     # SyntheticFaceDataset, SecuencialSyntheticFaceDataset
     train_data = SecuencialSyntheticFaceDataset(
         data=FactoryDataset.factory(
-            pathname=args.data, 
-            name=args.name_dataset, 
-            subset=FactoryDataset.training, 
+            pathname=args.data,
+            name=args.name_dataset,
+            subset=FactoryDataset.training,
             idenselect=idenselect,
-            download=True 
+            download=True
             ),
-        pathnameback=args.databack, 
+        pathnameback=args.databack,
         ext='jpg',
         count=288000, #+0
         num_channels=num_channels,
@@ -167,51 +167,52 @@ def main():
         transform_data=get_transforms_aug( imsize ),
         transform_image=get_transforms_det( imsize ),
         )
-    
-    
-#     labels, counts = np.unique(train_data.labels, return_counts=True)
-#     weights = 1/(counts/counts.sum())        
-#     samples_weights = np.array([ weights[ x ]  for x in train_data.labels ])    
-    
+
+
     num_train = len(train_data)
-    sampler = SubsetRandomSampler(np.random.permutation( num_train ) ) 
+#     labels, counts = np.unique(train_data.labels, return_counts=True)
+#     weights = 1/(counts/counts.sum())
+#     samples_weights = np.array([ weights[ x ]  for x in train_data.labels ])
 #     sampler = WeightedRandomSampler( weights=samples_weights, num_samples=len(samples_weights) , replacement=True )
+#
+    sampler = SubsetRandomSampler(np.random.permutation( num_train ) )
+
 
     train_loader = DataLoader(train_data, batch_size=args.batch_size,
         num_workers=args.workers, pin_memory=network.cuda, drop_last=True, sampler=sampler ) #shuffle=True,
-    
-    
+
+
     # validate dataset
     # SyntheticFaceDataset, SecuencialSyntheticFaceDataset
     val_data = SecuencialSyntheticFaceDataset(
         data=FactoryDataset.factory(
-            pathname=args.data, 
-            name=args.name_dataset, 
+            pathname=args.data,
+            name=args.name_dataset,
             idenselect=idenselect,
-            subset=FactoryDataset.validation, 
+            subset=FactoryDataset.validation,
             download=True
             ),
-        pathnameback=args.databack, 
+        pathnameback=args.databack,
         ext='jpg',
         count=2880, #+0
         num_channels=num_channels,
-        iluminate=True, angle=30, translation=0.2, warp=0.1, factor=0.2, 
-        #iluminate=True, angle=45, translation=0.3, warp=0.2, factor=0.2,         
+        iluminate=True, angle=30, translation=0.2, warp=0.1, factor=0.2,
+        #iluminate=True, angle=45, translation=0.3, warp=0.2, factor=0.2,
         transform_data=get_transforms_aug( imsize ),
         transform_image=get_transforms_det( imsize ),
         )
 
-    val_loader = DataLoader(val_data, batch_size=args.batch_size, shuffle=True, 
+    val_loader = DataLoader(val_data, batch_size=args.batch_size, shuffle=True,
         num_workers=args.workers, pin_memory=network.cuda, drop_last=False)
-       
+
     # print neural net class
     print('SEG-Torch: {}'.format(datetime.datetime.now()) )
     print(network)
 
     # training neural net
     network.fit( train_loader, val_loader, args.epochs, args.snapshot )
-    
-               
+
+
     print("Optimization Finished!")
     print("DONE!!!")
 

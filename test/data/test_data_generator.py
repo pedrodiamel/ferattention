@@ -1,4 +1,4 @@
-
+import unittest
 import sys
 import os
 import numpy as np
@@ -8,29 +8,29 @@ import matplotlib.pyplot as plt
 from pytvision.datasets import imageutl as imutl
 from pytvision.transforms import functional as F
 
-sys.path.append('../')
-from dgmm.transforms.render_fer import Generator
-from dgmm.datasets.factory  import FactoryDataset
-from dgmm.datasets.synthetic_fer  import SyntheticFaceDataset
+sys.path.append('../../')
+from torchlib.transforms.ferrender import Generator
+from torchlib.datasets.factory import FactoryDataset
+from torchlib.datasets.fersynthetic import SyntheticFaceDataset
 
 
 def test_dataset_synthetic():
 
     data=FactoryDataset.factory(
-        pathname='~/.datasets/', 
-        name=FactoryDataset.bu3dfe, 
-        subset=FactoryDataset.training, 
-        download=True 
+        pathname='~/.datasets/',
+        name=FactoryDataset.bu3dfe,
+        subset=FactoryDataset.training,
+        download=True
         )
 
     dataset = SyntheticFaceDataset(
         data,
-        '~/.datasets/photo',
+        '~/.datasets/coco',
         generate='image_and_mask',
         count=100,
     )
-    
-    img, mask, label = dataset[ np.random.randint( len(dataset) )  ]    
+
+    img, mask, label = dataset[ np.random.randint( len(dataset) )  ]
     #print( len(dataset) )
 
     plt.figure()
@@ -43,21 +43,21 @@ def test_dataset_synthetic():
 
 
 def test_dataset_generator():
-    
+
     data=FactoryDataset.factory(
-        pathname='~/.datasets/', 
-        name=FactoryDataset.bu3dfe, 
-        subset=FactoryDataset.training, 
-        download=True 
+        pathname='~/.datasets/',
+        name=FactoryDataset.bu3dfe,
+        subset=FactoryDataset.training,
+        download=True
         )
-   
+
     ren = Generator()
     img, y = data[ np.random.randint( len(data) ) ]
     img = np.stack((img,img,img),axis=2)
 
     idx=1
     pathname = os.path.expanduser( '~/.datasets/photo' )
-    data_back = imutl.imageProvide( pathname, ext='jpg'); 
+    data_back = imutl.imageProvide( pathname, ext='jpg');
     back = data_back[ (idx)%len(data_back)  ]
     back = F.resize_image(back, 640, 1024, resize_mode='crop', interpolate_mode=cv2.INTER_LINEAR);
     #back = back[:,:,0]
@@ -82,4 +82,3 @@ def test_dataset_generator():
 
 # test_dataset_generator()
 test_dataset_synthetic()
-

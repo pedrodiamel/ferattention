@@ -69,6 +69,7 @@ class AttentionNeuralNetAbstract(NeuralNetAbstract):
         pretrained=False,
         size_input=388,
         num_classes=8,
+        backbone='preactresnet'
         ):
         """
         Create
@@ -101,6 +102,7 @@ class AttentionNeuralNetAbstract(NeuralNetAbstract):
         )
 
         self.size_input = size_input
+        self.backbone = backbone
 
         self.accuracy = nloss.Accuracy()
         self.topk     = nloss.TopkAccuracy()
@@ -110,23 +112,6 @@ class AttentionNeuralNetAbstract(NeuralNetAbstract):
         # Set the graphic visualization
         self.visheatmap = gph.HeatMapVisdom(env_name=self.nameproject, heatsize=(100,100) )
 
-
-    # def test(self, data_loader ):
-    #     # initialization
-    #     k, masks, ids = 0, [], []
-    #     # switch to evaluate mode
-    #     self.net.eval()
-    #     with torch.no_grad():
-    #         end = time.time()
-    #         for i, (idd, x_img) in enumerate( tqdm(data_loader) ):
-    #             x = x_img.cuda() if self.cuda else x_img
-    #             # fit (forward)
-    #             y_hat = self.net(x)
-    #             y_hat = F.softmax(y_hat, dim=1)
-    #             y_hat = pytutils.to_np(y_hat)
-    #             masks.append( y_hat )
-    #             ids.append( idd )
-    #     return ids, masks
 
     def representation( self, dataloader, breal=True ):
         Y_labs = []
@@ -269,6 +254,7 @@ class AttentionNeuralNet(AttentionNeuralNetAbstract):
         pretrained=False,
         size_input=388,
         num_classes=8,
+        backbone='preactresnet'
         ):
         """
         Create
@@ -296,6 +282,7 @@ class AttentionNeuralNet(AttentionNeuralNetAbstract):
             pretrained,
             size_input,
             num_classes,
+            backbone
         )
 
         self.logger_train = Logger( 'Train', ['loss', 'loss_bce', 'loss_att' ], [ 'topk'], self.plotter  )
@@ -525,6 +512,7 @@ class AttentionSTNNeuralNet(AttentionNeuralNet):
         pretrained=False,
         size_input=388,
         num_classes=8,
+        backbone='preactresnet'
         ):
         """
         Create
@@ -552,6 +540,7 @@ class AttentionSTNNeuralNet(AttentionNeuralNet):
             pretrained,
             size_input,
             num_classes,
+            backbone
         )
 
         self.logger_train = Logger( 'Train', ['loss', 'loss_bce', 'loss_att', 'loss_stn' ], ['topk'], self.plotter  )
@@ -799,6 +788,7 @@ class AttentionGMMNeuralNet(AttentionNeuralNetAbstract):
         pretrained=False,
         size_input=388,
         num_classes=8,
+        backbone='preactresnet'
         ):
         """
         Create
@@ -826,6 +816,7 @@ class AttentionGMMNeuralNet(AttentionNeuralNetAbstract):
             pretrained,
             size_input,
             num_classes,
+            backbone
         )
 
         self.logger_train = Logger( 'Train', ['loss', 'loss_gmm', 'loss_bce', 'loss_att' ], [ 'topk', 'gmm'], self.plotter  )
@@ -1068,6 +1059,7 @@ class AttentionGMMSTNNeuralNet(AttentionNeuralNetAbstract):
         pretrained=False,
         size_input=388,
         num_classes=8,
+        backbone='preactresnet'
         ):
         """
         Create
@@ -1095,6 +1087,7 @@ class AttentionGMMSTNNeuralNet(AttentionNeuralNetAbstract):
             pretrained,
             size_input,
             num_classes,
+            backbone
         )
 
         self.logger_train = Logger( 'Train', ['loss', 'loss_gmm', 'loss_bce', 'loss_att', 'loss_stn' ], [ 'topk', 'gmm'], self.plotter  )
@@ -1357,6 +1350,7 @@ class MitosisAttentionGMMNeuralNet(AttentionNeuralNetAbstract):
         pretrained=False,
         size_input=388,
         num_classes=8,
+        backbone='preactresnet'
         ):
         """
         Create
@@ -1384,6 +1378,7 @@ class MitosisAttentionGMMNeuralNet(AttentionNeuralNetAbstract):
             pretrained,
             size_input,
             num_classes,
+            backbone
         )
 
         self.logger_train = Logger( 'Train', ['loss', 'loss_gmm', 'loss_bce', 'loss_att' ], [ 'topk', 'gmm'], self.plotter  )
@@ -1640,6 +1635,7 @@ class MitosisAttentionGMMAccumulationNeuralNet(MitosisAttentionGMMNeuralNet):
         pretrained=False,
         size_input=388,
         num_classes=8,
+        backbone='preactresnet'
         ):
         """
         Create
@@ -1667,6 +1663,7 @@ class MitosisAttentionGMMAccumulationNeuralNet(MitosisAttentionGMMNeuralNet):
             pretrained,
             size_input,
             num_classes,
+            backbone
         )
 
 

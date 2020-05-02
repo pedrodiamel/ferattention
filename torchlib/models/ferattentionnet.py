@@ -28,13 +28,7 @@ def ferattention(pretrained=False, **kwargs):
     """
     model = FERAttentionNet(**kwargs)
     if pretrained == True:
-        #model.load_state_dict(state['model'])
-        print('>> pretrained: {} !!!'.format('chk000390') )
-        state = torch.load('../chk000390.pth.tar')
-        #model.load_state_dict( state['state_dict'] )
-        utl.load_state_dict(model.state_dict(), state['state_dict'] )
-        model.netclass.weights_init()
-        #pass
+        pass
     return model
 
 
@@ -43,13 +37,7 @@ def ferattentiongmm(pretrained=False, **kwargs):
     """
     model = FERAttentionGMMNet(**kwargs)
     if pretrained == True:
-        #model.load_state_dict(state['model'])
-        print('>> pretrained: {} !!!'.format('chk000100') )
-        state = torch.load('../chk000390.pth.tar')
-        #model.load_state_dict( state['state_dict'] )
-        utl.load_state_dict(model.state_dict(), state['state_dict'] )
-        #model.netclass.weights_init()
-        #pass
+        pass
     return model
 
 
@@ -58,13 +46,7 @@ def ferattentionstn(pretrained=False, **kwargs):
     """
     model = FERAttentionSTNNet(**kwargs)
     if pretrained == True:
-        #model.load_state_dict(state['model'])
-        print('>> pretrained: {} !!!'.format('chk000390') )
-        state = torch.load('../chk000390.pth.tar')
-        #model.load_state_dict( state['state_dict'] )
-        utl.load_state_dict(model.state_dict(), state['state_dict'] )
-        model.netclass.weights_init()
-        #pass
+        pass
     return model
 
 
@@ -74,13 +56,7 @@ def ferattentiongmmstn(pretrained=False, **kwargs):
     """
     model = FERAttentionGMMSTNNet(**kwargs)
     if pretrained == True:
-        #model.load_state_dict(state['model'])
-        print('>> pretrained: {} !!!'.format('chk000390') )
-        state = torch.load('../chk000390.pth.tar')
-        #model.load_state_dict( state['state_dict'] )
-        utl.load_state_dict(model.state_dict(), state['state_dict'] )
-        model.netclass.weights_init()
-        #pass
+        pass
     return model
 
 
@@ -253,7 +229,7 @@ class AttentionResNet(nn.Module):
         self.dec5   = DecoderBlockV2(bottom_channel_nr + num_filters * 8,      num_filters * 8 * 2, num_filters * 8)
         self.dec4   = DecoderBlockV2(bottom_channel_nr // 2 + num_filters * 8, num_filters * 8 * 2, num_filters * 8)
         self.dec3   = DecoderBlockV2(bottom_channel_nr // 4 + num_filters * 8, num_filters * 4 * 2, num_filters * 2)
-        self.dec2   = DecoderBlockV2(bottom_channel_nr // 8 + num_filters * 2, num_filters * 2 * 2, num_filters * 2 * 2)
+        self.dec2   = DecoderBlockV2(bottom_channel_nr // 8 + num_filters * 2, num_filters * 2 * 2, num_filters * 2*2)
         self.dec1   = DecoderBlockV2(num_filters * 2 * 2,                      num_filters * 2 * 2, num_filters)
 
         self.attention_map = nn.Sequential(
@@ -289,7 +265,7 @@ class FERAttentionNet(nn.Module):
     """FERAttentionNet
     """
 
-    def __init__(self, dim=32, num_classes=1, num_channels=3, backbone = 'resnet', num_filters=32 ):
+    def __init__(self, dim=32, num_classes=1, num_channels=3, backbone='preactresnet', num_filters=32 ):
 
         super().__init__()
         self.num_classes = num_classes
@@ -313,7 +289,6 @@ class FERAttentionNet(nn.Module):
 
 
         # Select backbone classification and reconstruction
-        # TODO March 01, 2019: Select backbone for classification and representation module
         self.backbone = backbone
         if   self.backbone == 'preactresnet':
              self.netclass = preactresnet.preactresnet18( num_classes=num_classes, num_channels=num_channels )
@@ -378,7 +353,7 @@ class FERAttentionGMMNet(nn.Module):
     """FERAttentionGMMNet
     """
 
-    def __init__(self, dim=32, num_classes=1, num_channels=3, backbone = 'resnet', num_filters=32 ):
+    def __init__(self, dim=32, num_classes=1, num_channels=3, backbone='preactresnet', num_filters=32 ):
 
         super().__init__()
         self.num_classes = num_classes
@@ -402,7 +377,6 @@ class FERAttentionGMMNet(nn.Module):
 
 
         # Select backbone for classification and reconstruction
-        # TODO March 01, 2019: Select backbone for classification and representation module
         self.backbone = backbone
         if   self.backbone == 'preactresnet':
              self.netclass = preactresnet.preactresembnetex18( dim=dim, num_classes=num_classes, num_channels=num_channels )
@@ -441,13 +415,13 @@ class FERAttentionGMMNet(nn.Module):
         att_out = normalize_layer(att)
 
         # Select backbone classification
-        if   self.backcoder == 'preactresnet':
+        if   self.backbone == 'preactresnet':
              att_pool = F.avg_pool2d(att_out, 2)                                                     #if preactresnet
-        elif self.backcoder == 'inception':
+        elif self.backbone == 'inception':
              att_pool = F.interpolate(att_out, size=(299,299) ,mode='bilinear', align_corners=False) #if inseption
-        elif self.backcoder == 'resnet':
+        elif self.backbone == 'resnet':
              att_pool = F.interpolate(att_out, size=(224,224) ,mode='bilinear', align_corners=False) #if resnet
-        elif self.backcoder == 'cvgg':
+        elif self.backbone == 'cvgg':
              att_pool = att_out                                                                       #if vgg
         else:
             assert(False)
@@ -460,7 +434,7 @@ class FERAttentionSTNNet(nn.Module):
     """FERAttentionSTNNet
     """
 
-    def __init__(self, dim=1, num_classes=1, num_channels=3, backbone = 'resnet', num_filters=32 ):
+    def __init__(self, dim=1, num_classes=1, num_channels=3, backbone='preactresnet', num_filters=32 ):
 
         super().__init__()
         self.num_classes = num_classes
@@ -553,7 +527,7 @@ class FERAttentionGMMSTNNet(nn.Module):
     """FERAttentionGMMSTNNet
     """
 
-    def __init__(self, dim=32, num_classes=1, num_channels=3, backbone = 'resnet', num_filters=32 ):
+    def __init__(self, dim=32, num_classes=1, num_channels=3, backbone='preactresnet', num_filters=32 ):
 
         super().__init__()
         self.num_classes = num_classes
@@ -579,7 +553,6 @@ class FERAttentionGMMSTNNet(nn.Module):
         self.stn = stn.STN()
 
         # Classification and reconstruction
-        # TODO March 01, 2019: Select backbone model classification
         self.backbone = backbone
         if   self.backbone == 'preactresnet':
              self.netclass = preactresnet.preactresembnetex18(  dim=dim, num_classes=num_classes, num_channels=num_channels )

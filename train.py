@@ -4,10 +4,10 @@ import cv2
 import numpy as np
 
 import torch
-from torch.utils.data import Dataset, DataLoader
-from torchvision import transforms, utils
 import torch.backends.cudnn as cudnn
+from torch.utils.data import Dataset, DataLoader
 from torch.utils.data.sampler import SubsetRandomSampler, WeightedRandomSampler
+from torchvision import transforms, utils
 
 from torchlib.datasets.fersynthetic  import SyntheticFaceDataset, SecuencialSyntheticFaceDataset
 from torchlib.datasets.factory  import FactoryDataset
@@ -16,11 +16,9 @@ from torchlib.attentionnet import AttentionNeuralNet, AttentionSTNNeuralNet, Att
 from pytvision.transforms import transforms as mtrans
 from pytvision import visualization as view
 
-
-from argparse import ArgumentParser
 import datetime
+from argparse import ArgumentParser
 from aug import get_transforms_aug, get_transforms_det
-
 
 def arg_parser():
     """Arg parser"""
@@ -39,12 +37,10 @@ def arg_parser():
                         help='number of data loading workers (default: 1)')
     parser.add_argument('--epochs', default=90, type=int, metavar='N',
                         help='number of total epochs to run')
-
     parser.add_argument('--kfold', default=0, type=int, metavar='N',
                         help='k fold')
     parser.add_argument('--nactor', default=0, type=int, metavar='N',
                         help='number of the actores')
-
     parser.add_argument('--start-epoch', default=0, type=int, metavar='N',
                         help='manual epoch number (useful on restarts)')
     parser.add_argument('-b', '--batch-size', default=256, type=int, metavar='N',
@@ -62,18 +58,17 @@ def arg_parser():
     parser.add_argument('--name', default='exp', type=str,
                         help='name of experiment')
     parser.add_argument('--resume', default='model_best.pth.tar', type=str, metavar='NAME',
-                    help='name to latest checkpoint (default: none)')
+                        help='name to latest checkpoint (default: none)')
     parser.add_argument('--arch', default='simplenet', type=str,
                         help='architecture')
     parser.add_argument('--finetuning', action='store_true', default=False,
-                    help='Finetuning')
+                        help='Finetuning')
     parser.add_argument('--loss', default='cross', type=str,
                         help='loss function')
     parser.add_argument('--opt', default='adam', type=str,
                         help='optimize function')
     parser.add_argument('--scheduler', default='fixed', type=str,
                         help='scheduler function for learning rate')
-
     parser.add_argument('--image-size', default=388, type=int, metavar='N',
                         help='image size')
     parser.add_argument('--channels', default=1, type=int, metavar='N',
@@ -84,12 +79,19 @@ def arg_parser():
                         help='num classes (default: 10)')
     parser.add_argument('--name-dataset', default='mnist', type=str,
                         help='name dataset')
-
     parser.add_argument('--name-method', default='attnet', type=str,
                         help='name method')
-
     parser.add_argument('--parallel', action='store_true', default=False,
-                    help='Parallel')
+                        help='Parallel')
+    parser.add_argument('--balance', action='store_true', default=False,
+                        help='balance data')
+    parser.add_argument('--backbone', default='preactresnet', type=str,
+                        help='backbone for classification and representation')
+    parser.add_argument('--trainiteration', default=1000, type=int, metavar='N',
+                        help='train iteration')
+    parser.add_argument('--testiteration', default=100, type=int, metavar='N',
+                        help='train iteration')
+
     return parser
 
 
@@ -105,6 +107,8 @@ def main():
     num_channels=args.channels
     dim=args.dim
     view_freq=1
+    trainiteration = args.trainiteration
+    testiteration = args.testiteration
 
     fname = args.name_method
     fnet = {
@@ -160,22 +164,22 @@ def main():
             ),
         pathnameback=args.databack,
         ext='jpg',
-        count=288000, #+0
+        count=trainiteration,
         num_channels=num_channels,
         iluminate=True, angle=30, translation=0.2, warp=0.1, factor=0.2,
-        #iluminate=True, angle=45, translation=0.3, warp=0.2, factor=0.2,
         transform_data=get_transforms_aug( imsize ),
         transform_image=get_transforms_det( imsize ),
         )
 
 
     num_train = len(train_data)
-#     labels, counts = np.unique(train_data.labels, return_counts=True)
-#     weights = 1/(counts/counts.sum())
-#     samples_weights = np.array([ weights[ x ]  for x in train_data.labels ])
-#     sampler = WeightedRandomSampler( weights=samples_weights, num_samples=len(samples_weights) , replacement=True )
-#
-    sampler = SubsetRandomSampler(np.random.permutation( num_train ) )
+    if args.balance:
+        labels, counts = np.unique(train_data.labels, return_counts=True)
+        weights = 1/(counts/counts.sum())
+        samples_weights = np.array([ weights[x] for x in train_data.labels ])
+        sampler = WeightedRandomSampler( weights=samples_weights, num_samples=len(samples_weights) , replacement=True )
+    else:
+        sampler = SubsetRandomSampler(np.random.permutation( num_train ) )
 
 
     train_loader = DataLoader(train_data, batch_size=args.batch_size,
@@ -194,10 +198,9 @@ def main():
             ),
         pathnameback=args.databack,
         ext='jpg',
-        count=2880, #+0
+        count=testiteration,
         num_channels=num_channels,
         iluminate=True, angle=30, translation=0.2, warp=0.1, factor=0.2,
-        #iluminate=True, angle=45, translation=0.3, warp=0.2, factor=0.2,
         transform_data=get_transforms_aug( imsize ),
         transform_image=get_transforms_det( imsize ),
         )
@@ -211,7 +214,6 @@ def main():
 
     # training neural net
     network.fit( train_loader, val_loader, args.epochs, args.snapshot )
-
 
     print("Optimization Finished!")
     print("DONE!!!")

@@ -23,7 +23,7 @@ class STN(nn.Module):
 
         # Regressor for the 3 * 2 affine matrix
         self.fc_loc = nn.Sequential(
-            nn.Linear(10 * 28 * 28, 32),
+            nn.Linear(10 * 12 * 12, 32),
             nn.ReLU(True),
             nn.Linear(32, 3 * 2 )
         )
@@ -39,7 +39,7 @@ class STN(nn.Module):
         #print(xs.shape)
         #assert(False)
                 
-        xs = xs.view(-1, 10 * 28 * 28)
+        xs = xs.view(-1, 10 * 12 * 12)
         xs = self.fc_loc(xs)
         theta = xs.view(-1, 2, 3)
                 
@@ -57,13 +57,13 @@ class STN(nn.Module):
     
     
 def test():
-    num_channels=3
+    num_channels=1
     num_classes=10
     net = STN()
-    y = net( torch.randn(1,num_channels,48,48) )
+    y = net( torch.randn(1,num_channels,64,64) )
     print(y.size())
     
-#test()
+# test()
     
     
     

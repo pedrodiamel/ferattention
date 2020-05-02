@@ -7,7 +7,7 @@ import torch.utils.model_zoo as model_zoo
 from . import utils as utl
 
 __all__ = ['ResNet', 'resnet18', 'resnet34', 'resnet50', 'resnet101',
-           'resnet152']
+           'resnet152', 'ResEmbNet', 'resnetemb18', 'ResEmbExNet', 'resnetembex18']
 
 
 model_urls = {
@@ -44,13 +44,10 @@ class BasicBlock(nn.Module):
         out = self.conv1(x)
         out = self.bn1(out)
         out = self.relu(out)
-
         out = self.conv2(out)
         out = self.bn2(out)
-
         if self.downsample is not None:
             residual = self.downsample(x)
-
         out += residual
         out = self.relu(out)
 
@@ -144,6 +141,14 @@ class ResNet(nn.Module):
 
         return nn.Sequential(*layers)
 
+    def weights_init(self):
+        for m in self.modules():
+            if isinstance(m, torch.nn.Conv2d) or isinstance(m, nn.Linear):
+                torch.nn.init.xavier_uniform(m.weight.data)    
+            elif isinstance(m, nn.BatchNorm2d):
+                m.weight.data.fill_(1)
+                m.bias.data.zero_()
+    
     def forward(self, x):
         
         x = self.conv1(x)
@@ -236,3 +241,183 @@ def resnet152(pretrained=False, **kwargs):
         utl.load_state_dict(model.state_dict(), model_zoo.load_url(model_urls['resnet152']))
 
     return model
+
+
+class ResEmbNet(nn.Module):
+
+    def __init__(self, block, layers, dim=1000, num_channels=3, initial_channels=64):
+        self.inplanes = initial_channels
+        super(ResEmbNet, self).__init__()
+
+        self.dim = dim
+        self.num_channels = num_channels
+        self.size_input=224 
+        self.conv_dim_out = initial_channels*8*block.expansion
+
+        self.conv1 = nn.Conv2d(num_channels, initial_channels, kernel_size=7, stride=2, padding=3, bias=False)
+        self.bn1 = nn.BatchNorm2d(initial_channels)
+        self.relu = nn.ReLU(inplace=True)
+        self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
+        self.layer1 = self._make_layer(block, initial_channels, layers[0])
+        self.layer2 = self._make_layer(block, initial_channels*2, layers[1], stride=2)
+        self.layer3 = self._make_layer(block, initial_channels*4, layers[2], stride=2)
+        self.layer4 = self._make_layer(block, initial_channels*8, layers[3], stride=2)
+        self.avgpool = nn.AvgPool2d(7, stride=1)        
+        self.fc = nn.Linear(self.conv_dim_out, dim)
+
+        
+        for m in self.modules():
+            if isinstance(m, nn.Conv2d):
+                nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='relu')
+            elif isinstance(m, nn.BatchNorm2d):
+                nn.init.constant_(m.weight, 1)
+                nn.init.constant_(m.bias, 0)
+
+    def _make_layer(self, block, planes, blocks, stride=1):
+        downsample = None
+        if stride != 1 or self.inplanes != planes * block.expansion:
+            downsample = nn.Sequential(
+                nn.Conv2d(self.inplanes, planes * block.expansion,
+                          kernel_size=1, stride=stride, bias=False),
+                nn.BatchNorm2d(planes * block.expansion),
+            )
+        layers = []
+        layers.append(block(self.inplanes, planes, stride, downsample))
+        self.inplanes = planes * block.expansion
+        for i in range(1, blocks):
+            layers.append(block(self.inplanes, planes))
+        return nn.Sequential(*layers)
+    
+    def weights_init(self):
+        for m in self.modules():
+            if isinstance(m, torch.nn.Conv2d) or isinstance(m, nn.Linear):
+                torch.nn.init.xavier_uniform(m.weight.data)    
+            elif isinstance(m, nn.BatchNorm2d):
+                m.weight.data.fill_(1)
+                m.bias.data.zero_()
+
+    def forward(self, x):
+        
+        x = self.conv1(x)
+        x = self.bn1(x)
+        x = self.relu(x)
+        x = self.maxpool(x)
+        x = self.layer1(x)
+        x = self.layer2(x)
+        x = self.layer3(x)
+        x = self.layer4(x)
+        x = self.avgpool(x) # <-- [n, dim, w,h ] to [n, dim, 1,1 ]
+        x = x.view(x.size(0), -1)
+        x = self.fc(x)
+        
+        
+        return x
+    
+
+
+def resnetemb18(pretrained=False, **kwargs):
+    """Constructs a ResEmbNet-18 model.
+    Args:
+        pretrained (bool): If True, returns a model pre-trained on ImageNet
+    """
+    model = ResEmbNet(BasicBlock, [2, 2, 2, 2], **kwargs)
+    if pretrained:
+        #model.load_state_dict(model_zoo.load_url(model_urls['resnet18']))
+        utl.load_state_dict(model.state_dict(), model_zoo.load_url(model_urls['resnet18']))
+        pass
+    return model
+
+
+class ResEmbExNet(nn.Module):
+
+    def __init__(self, block, layers, dim=1000, num_classes=1000, num_channels=3, initial_channels=64):
+        self.inplanes = initial_channels
+        super(ResEmbExNet, self).__init__()
+
+        self.dim = dim
+        self.num_channels = num_channels
+        self.num_classes=num_classes
+        self.size_input=224 
+        self.conv_dim_out = initial_channels*8*block.expansion
+
+        self.conv1 = nn.Conv2d(num_channels, initial_channels, kernel_size=7, stride=2, padding=3, bias=False)
+        self.bn1 = nn.BatchNorm2d(initial_channels)
+        self.relu = nn.ReLU(inplace=True)
+        self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
+        self.layer1 = self._make_layer(block, initial_channels, layers[0])
+        self.layer2 = self._make_layer(block, initial_channels*2, layers[1], stride=2)
+        self.layer3 = self._make_layer(block, initial_channels*4, layers[2], stride=2)
+        self.layer4 = self._make_layer(block, initial_channels*8, layers[3], stride=2)
+        self.avgpool = nn.AvgPool2d(7, stride=1)        
+        self.fc = nn.Linear(self.conv_dim_out, dim)
+        self.classification = nn.Linear(dim , num_classes)
+        
+        for m in self.modules():
+            if isinstance(m, nn.Conv2d):
+                nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='relu')
+            elif isinstance(m, nn.BatchNorm2d):
+                nn.init.constant_(m.weight, 1)
+                nn.init.constant_(m.bias, 0)
+
+    def _make_layer(self, block, planes, blocks, stride=1):
+        downsample = None
+        if stride != 1 or self.inplanes != planes * block.expansion:
+            downsample = nn.Sequential(
+                nn.Conv2d(self.inplanes, planes * block.expansion,
+                          kernel_size=1, stride=stride, bias=False),
+                nn.BatchNorm2d(planes * block.expansion),
+            )
+        layers = []
+        layers.append(block(self.inplanes, planes, stride, downsample))
+        self.inplanes = planes * block.expansion
+        for i in range(1, blocks):
+            layers.append(block(self.inplanes, planes))
+        return nn.Sequential(*layers)
+    
+    def weights_init(self):
+        for m in self.modules():
+            if isinstance(m, torch.nn.Conv2d) or isinstance(m, nn.Linear):
+                torch.nn.init.xavier_uniform(m.weight.data)    
+            elif isinstance(m, nn.BatchNorm2d):
+                m.weight.data.fill_(1)
+                m.bias.data.zero_()
+
+    def forward(self, x):
+        
+        x = self.conv1(x)
+        x = self.bn1(x)
+        x = self.relu(x)
+        x = self.maxpool(x)
+        x = self.layer1(x)
+        x = self.layer2(x)
+        x = self.layer3(x)
+        x = self.layer4(x)
+        x = self.avgpool(x) # <-- [n, dim, w,h ] to [n, dim, 1,1 ]
+        x = x.view(x.size(0), -1)
+        x = self.fc(x)
+        y = self.classification(x)
+        return x,y
+    
+
+def resnetembex18(pretrained=False, **kwargs):
+    """Constructs a ResEmbNet-18 model.
+    Args:
+        pretrained (bool): If True, returns a model pre-trained on ImageNet
+    """
+    model = ResEmbExNet(BasicBlock, [2, 2, 2, 2], **kwargs)
+    if pretrained:
+        #model.load_state_dict(model_zoo.load_url(model_urls['resnet18']))
+        utl.load_state_dict(model.state_dict(), model_zoo.load_url(model_urls['resnet18']))
+        pass
+    return model
+
+
+
+def test():
+    num_channels=1
+    num_classes=10
+    net = resnet18( False, num_classes=num_classes, num_channels=num_channels )
+    y = net( torch.randn(1,num_channels,224,224) )
+    print(y.size())
+
+#test()

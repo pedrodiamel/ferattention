@@ -17,7 +17,7 @@ from torchvision import transforms, utils
 from pytvision.transforms.aumentation import  ObjectImageMetadataTransform
 from pytvision.transforms import transforms as mtrans
 
-sys.path.append('../')
+#sys.path.append('../')
 from torchlib.transforms import functional as F
 from torchlib.datasets.fersynthetic  import SyntheticFaceDataset
 from torchlib.datasets.factory  import FactoryDataset
@@ -76,7 +76,7 @@ def main():
     bclassification_test=True
     brecover_test=True
     
-    imagesize=128
+    imagesize=64
     idenselect=np.arange(10)
     
     
@@ -250,9 +250,9 @@ def main():
             Yto = data_emb_val['Y'] 
             
 
-            #clf = KNeighborsClassifier(n_neighbors=3)
+            clf = KNeighborsClassifier(n_neighbors=11)
             #clf = GaussianNB()
-            clf = RandomForestClassifier(n_estimators=150, oob_score=True, random_state=123456)
+            #clf = RandomForestClassifier(n_estimators=150, oob_score=True, random_state=123456)
             #clf = MLPClassifier(hidden_layer_sizes=(100,100), max_iter=100, alpha=1e-4,
             #                     solver='sgd', verbose=10, tol=1e-4, random_state=1,
             #                     learning_rate_init=.01)

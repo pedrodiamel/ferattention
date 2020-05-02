@@ -121,6 +121,7 @@ class ResampleDataset( object ):
             obj = self.transform( obj )
         return obj.to_dict()
 
+
 class SecuencialSamplesDataset( object ):
     """
     Generic dataset for extratificate secuencial samples
@@ -175,7 +176,6 @@ class SecuencialSamplesDataset( object ):
 
     
     
-
 class SecuencialExSamplesDataset( object ):
     """
     Generic dataset for extratificate secuencial ext samples
@@ -367,4 +367,153 @@ class TripletsDataset( object ):
             b = np.random.choice(np.where(self.labels == anchor_class)[0])
             self.triplets.append((a, b, c))
         np.random.shuffle(self.triplets)
+
+
+class MitosisDataset( object ):
+    r"""Mitosis dataset
+    This dataset have the capacity of classes regeneration 
+    Args:
+        data: dataprovide class 
+        num_channels: numbers of channels 
+        count: number of objects in datasets 
+        tranform: tranform 
+    """
+
+    def __init__(self, 
+        data,
+        num_channels=1,
+        count=None,
+        transform=None
+        ):        
+        
+        if count is None: count = len( data )
+
+        self.count         = count
+        self.data          = data
+        self.num_channels  = num_channels        
+        self.transform     = transform           
+        self.labels        = data.labels
+        self.classes       = np.unique(self.labels) 
+        self.numclass      = len(self.classes)
+        self.labels_reg    = self.labels
+        self.classes_reg   = self.classes
+        self.numclass_reg  = self.numclass
+
+
+    def __len__(self):
+        return self.count
+
+    def __getitem__(self, idx):   
+
+        idx = idx % len(self.data)
+        image, label = self.data[idx]
+        label_reg    = self.labels_reg[idx]
+
+        image     = np.array(image) 
+        image     = utility.to_channels(image, self.num_channels)        
+        label     = utility.to_one_hot(label, self.numclass)
+        label_reg = utility.to_one_hot(label_reg, self.numclass_reg )
+
+        obj = ObjectImageTransform( image )
+        if self.transform: 
+            obj = self.transform( obj )
+
+        x      = obj.to_value()
+        y      = torch.from_numpy( label ).float()
+        y_reg  = torch.from_numpy( label_reg ).float()
+        
+        return x, y, y_reg
+
+
+    def regeneration(self, label_regeneration ):
+        
+        assert( len(label_regeneration) == len(self.labels_reg) )                
+        self.labels_reg    = label_regeneration
+        self.classes_reg   = np.unique(self.labels_reg)
+        self.numclass_reg  = len(self.classes_reg)
+
+    def __repr__(self):
+        fmt_str  = 'Dataset ' + self.__class__.__name__ 
+        fmt_str += '\n' 
+        return fmt_str
+
+
+
+class MitosisSecuencialSamplesDataset( object ):
+    """
+    Mitosis dataset for extratificate secuencial samples
+    Args:
+        data: dataprovide class
+        count: number of objects in datasets
+        num_channels: numbers of channels  
+        tranform: tranform   
+    """ 
+
+    def __init__(self, 
+        data,
+        count=200,
+        num_channels=1,
+        transform=None        
+        ):
+        """ 
+        Initialization            
+        """            
+
+        if count is None: count = len(data)
+        
+        self.num_channels=num_channels
+        self.data = data
+        self.count = count
+
+        # make index
+        self.labels = data.labels 
+        self.classes = np.unique( self.labels )
+        self.numclass = len( self.classes )
+        self.regeneration( self.labels )
+        self.transform = transform  
+        
+
+    def regeneration(self, label_regeneration ):
+                    
+        self.labels_reg    = label_regeneration
+        self.classes_reg   = np.unique(self.labels_reg)
+        self.numclass_reg  = len(self.classes_reg)
+        
+        self.labels_index = []
+        for cl in range( self.numclass_reg ):             
+            indx = np.where(self.labels_reg == cl)[0]
+            self.labels_index.append(indx)            
+
+    def __repr__(self):
+        fmt_str  = 'Dataset ' + self.__class__.__name__ 
+        fmt_str += '\n' 
+        return fmt_str
+        
+    def __len__(self):
+        return self.count
+
+    def __getitem__(self, idx):   
+
+        idx = idx % self.numclass_reg
+        class_index = self.labels_index[idx]        
+        n =  len(class_index)
+        idx = class_index[ random.randint(0,n-1) ]
+        
+        image, label = self.data[idx]
+        label_reg    = self.labels_reg[idx]
+
+        image     = np.array(image) 
+        image     = utility.to_channels(image, self.num_channels)        
+        label     = utility.to_one_hot(label, self.numclass)
+        label_reg = utility.to_one_hot(label_reg, self.numclass_reg )
+
+        obj = ObjectImageTransform( image )
+        if self.transform: 
+            obj = self.transform( obj )
+
+        x      = obj.to_value()
+        y      = torch.from_numpy( label ).float()
+        y_reg  = torch.from_numpy( label_reg ).float()
+        
+        return x, y, y_reg
 

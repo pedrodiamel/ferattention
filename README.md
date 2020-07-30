@@ -44,6 +44,11 @@ Installation
     $python setup.py install
     $pip install -r installation.txt
 
+Docker:
+
+    docker build -f "Dockerfile" -t feratt:latest .
+    ./run_docker.sh
+
 ### Visualize result with Visdom
 
 We now support Visdom for real-time loss visualization during training!
@@ -87,4 +92,3 @@ Acknowledgments
 ------------
 
 Gratefully acknowledge financial support from the Brazilian government agency FACEPE.
-

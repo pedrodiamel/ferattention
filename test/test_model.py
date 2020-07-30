@@ -1,11 +1,14 @@
-from torchlib import models as md
-import torch.nn as nn
-import torch
-import unittest
-import sys
+# python -m unittest test_model.py
+
 import os
+import sys
+
+import torch
+import torch.nn as nn
+import unittest
 
 sys.path.append('../')
+from torchlib import models as md
 
 
 class TestModel(unittest.TestCase):

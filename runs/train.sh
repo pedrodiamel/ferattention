@@ -19,7 +19,7 @@ NAMEMETHOD='attnet' # attnet, attstnnet, attgmmnet, attgmmstnnet
 ARCH='ferattention' # ferattention, ferattentionstn, ferattentiongmm, ferattentiongmmstn
 LOSS='attloss'
 OPT='adam'
-SCHEDULER='plateau' #step, plateau
+SCHEDULER='fixed' #fixed, step, plateau
 NUMCLASS=8 #6, 7, 8
 NUMCHANNELS=3
 DIM=32
@@ -33,8 +33,8 @@ EXP_NAME='feratt_'$NAMEMETHOD'_'$ARCH'_'$LOSS'_'$OPT'_'$NAMEDATASET'_dim'$DIM'_b
 
 rm -rf $PROJECT/$EXP_NAME/$EXP_NAME.log
 rm -rf $PROJECT/$EXP_NAME/
-mkdir $PROJECT
-mkdir $PROJECT/$EXP_NAME
+mkdir -p $PROJECT
+mkdir -p $PROJECT/$EXP_NAME
 
 #0,1,2,3
 CUDA_VISIBLE_DEVICES=0  python ../train.py \

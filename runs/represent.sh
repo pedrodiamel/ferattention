@@ -8,7 +8,7 @@ PATHNAMEOUT='../out'
 FILENAME='result.txt'
 PATHMODEL='models'
 NAMEMODEL='model_best.pth.tar' #'model_best.pth.tar' #'chk000565.pth.tar'
-MODEL=$PROJECT/$PROJECTNAME/$PATHMODEL/$NAMEMODEL  
+MODEL=$PROJECT/$PROJECTNAME/$PATHMODEL/$NAMEMODEL
 
 python ../represent.py \
 --project=$PROJECT \
@@ -18,4 +18,3 @@ python ../represent.py \
 --pathnameout=$PATHNAMEOUT \
 --filename=$FILENAME \
 --model=$MODEL \
-

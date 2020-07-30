@@ -30,8 +30,8 @@ EXP_NAME='mitosis_att_'$NAMEMETHOD'_'$ARCH'_'$LOSS'_'$OPT'_'$NAMEDATASET'_dim'$D
 
 # rm -rf $PROJECT/$EXP_NAME/$EXP_NAME.log
 # rm -rf $PROJECT/$EXP_NAME/
-# mkdir $PROJECT    
-# mkdir $PROJECT/$EXP_NAME  
+# mkdir -p $PROJECT
+# mkdir -p $PROJECT/$EXP_NAME
 
 
 CUDA_VISIBLE_DEVICES=0,1,2,3 python ../train_mitosis.py \
@@ -63,4 +63,3 @@ $DATA \
 --parallel \
 --finetuning \
 2>&1 | tee -a $PROJECT/$EXP_NAME/$EXP_NAME.log \
-
